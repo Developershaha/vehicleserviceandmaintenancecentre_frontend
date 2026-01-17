@@ -3,7 +3,6 @@ interface VehicleInputProps {
   name: string;
   value: string;
   type?: string;
-  placeholder?: string;
   required?: boolean;
   error?: string;
   touched?: boolean;
@@ -16,7 +15,6 @@ const VehicleInput = ({
   name,
   value,
   type = "text",
-  placeholder,
   required = false,
   error,
   touched,
@@ -24,37 +22,45 @@ const VehicleInput = ({
   onBlur,
 }: VehicleInputProps) => {
   const showError = Boolean(error && touched);
+  const hasValue = value && value.length > 0;
 
   return (
-    <div className="mb-4">
+    <div className="relative mb-6">
+      <input
+        id={name}
+        name={name}
+        value={value}
+        type={type}
+        onChange={onChange}
+        onBlur={onBlur}
+        className={`
+           peer w-full h-12 rounded-md border px-4 pt-5 pb-3
+          text-sm leading-normal outline-none
+        ${
+          showError
+            ? "border-red-500 focus:ring-2 focus:ring-red-200"
+            : "border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
+        }
+  `}
+      />
+
+      {/* Floating Label */}
       <label
-        className={`mb-1 block text-sm font-medium ${
-          showError ? "text-red-600" : "text-gray-700"
-        }`}
+        htmlFor={name}
+        className={`
+          absolute left-3 z-10 bg-white px-1 text-sm transition-all
+          ${hasValue ? "-top-2 scale-90 text-blue-600" : "top-4 text-gray-500"}
+          peer-focus:-top-2
+          peer-focus:scale-90
+          peer-focus:text-blue-600
+          ${showError ? "text-red-600 peer-focus:text-red-600" : ""}
+        `}
       >
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
 
-      <input
-        name={name}
-        value={value}
-        type={type}
-        placeholder={placeholder}
-        onChange={onChange}
-        onBlur={onBlur}
-        className={`w-full rounded-md border px-4 py-2 text-sm outline-none
-          ${
-            showError
-              ? "border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-          }
-        `}
-      />
-
-      {showError && (
-        <p className="mt-1 text-xs text-red-600">{error}</p>
-      )}
+      {showError && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 };

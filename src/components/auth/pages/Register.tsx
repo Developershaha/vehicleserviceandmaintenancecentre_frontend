@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { showSnackbar } from "../store/snackbarSlice";
-import { useAppDispatch } from "../store/hook";
+import { showSnackbar } from "../../../store/snackbarSlice";
+import { useAppDispatch } from "../../../store/hook";
 import { authStyles } from "./authStyles";
-import VehicleButton from "../components/common/VehicleButton";
+import VehicleButton from "../../common/VehicleButton";
 
 const Register = () => {
   const navigate = useNavigate();

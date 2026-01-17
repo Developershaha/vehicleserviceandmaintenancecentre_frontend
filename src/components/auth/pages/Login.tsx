@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
-import { useAppDispatch } from "../store/hook";
-import { showSnackbar } from "../store/snackbarSlice";
+import { useAppDispatch } from "../../../store/hook";
+import { showSnackbar } from "../../../store/snackbarSlice";
 
 import logo from "../assets/logo.png";
-import VehicleButton from "../components/common/VehicleButton";
-import VehicleInput from "../components/common/VehicleInput";
-import VehicleLayout from "../components/common/VehicleLayout";
+import VehicleButton from "../../common/VehicleButton";
+import VehicleInput from "../../common/VehicleInput";
+import VehicleLayout from "../../common/VehicleLayout";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -62,7 +62,6 @@ const Login = () => {
         <VehicleInput
           label="Username"
           name="username"
-          placeholder="Enter username"
           required
           value={formik.values.username}
           onChange={formik.handleChange}
@@ -75,7 +74,6 @@ const Login = () => {
           label="Password"
           name="password"
           type="password"
-          placeholder="Enter password"
           required
           value={formik.values.password}
           onChange={formik.handleChange}
