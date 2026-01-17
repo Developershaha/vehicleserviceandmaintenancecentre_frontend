@@ -3,6 +3,7 @@ import { useState } from "react";
 import { showSnackbar } from "../store/snackbarSlice";
 import { useAppDispatch } from "../store/hook";
 import { authStyles } from "./authStyles";
+import VehicleButton from "../components/common/VehicleButton";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ const Register = () => {
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ❌ Password mismatch
     if (form.password !== form.confirmPassword) {
       dispatch(
         showSnackbar({
@@ -33,12 +33,11 @@ const Register = () => {
           duration: 4,
           vertical: "top",
           horizontal: "center",
-        })
+        }),
       );
       return;
     }
 
-    // ✅ Success
     dispatch(
       showSnackbar({
         message: "Registration successful. Please login.",
@@ -46,7 +45,7 @@ const Register = () => {
         duration: 4,
         vertical: "top",
         horizontal: "center",
-      })
+      }),
     );
 
     navigate("/");
@@ -68,6 +67,7 @@ const Register = () => {
             className={authStyles.input}
             value={form.firstName}
             onChange={handleChange}
+            required
           />
 
           <input
@@ -77,6 +77,7 @@ const Register = () => {
             className={authStyles.input}
             value={form.lastName}
             onChange={handleChange}
+            required
           />
 
           <input
@@ -87,6 +88,7 @@ const Register = () => {
             value={form.mobile}
             onChange={handleChange}
             pattern="[0-9]{10}"
+            required
           />
 
           <input
@@ -96,6 +98,7 @@ const Register = () => {
             className={authStyles.input}
             value={form.email}
             onChange={handleChange}
+            required
           />
 
           <input
@@ -105,6 +108,7 @@ const Register = () => {
             className={authStyles.input}
             value={form.password}
             onChange={handleChange}
+            required
           />
 
           <input
@@ -114,17 +118,16 @@ const Register = () => {
             className={authStyles.input}
             value={form.confirmPassword}
             onChange={handleChange}
+            required
           />
 
-          <button
-            className={authStyles.button}
-            // onClick={() => navigate("/dashboard")}
-          >
-            Register
-          </button>
+          {/* ✅ Common Button */}
+          <div className="pt-2">
+            <VehicleButton text="Register" />
+          </div>
         </form>
 
-        <p className={authStyles.subtitle}>
+        <p className={`${authStyles.subtitle} mt-4`}>
           Already have an account?{" "}
           <span
             className="cursor-pointer text-blue-600 hover:underline"
