@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
 import { useAppDispatch } from "../store/hook";
 import { showSnackbar } from "../store/snackbarSlice";
 
@@ -11,21 +12,43 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const formik = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+    },
 
-    dispatch(
-      showSnackbar({
-        message: "Login successfully",
-        type: "success",
-        duration: 4,
-        vertical: "top",
-        horizontal: "center",
-      }),
-    );
+    validate: (values) => {
+      const errors: any = {};
 
-    navigate("/dashboard");
-  };
+      if (!values.username) {
+        errors.username = "Username required";
+      }
+
+      if (!values.password) {
+        errors.password = "Password required";
+      }
+
+      return errors;
+    },
+
+    onSubmit: (values) => {
+      const postObj = {
+        username: values.username,
+        password: values.password,
+      };
+
+      console.log("POST OBJ 👉", postObj);
+
+      dispatch(
+        showSnackbar({
+          message: "Login successfully",
+        }),
+      );
+
+      navigate("/dashboard");
+    },
+  });
 
   return (
     <VehicleLayout
@@ -35,18 +58,36 @@ const Login = () => {
         Please Login Here
       </h2>
 
-      <form onSubmit={handleLogin}>
-        <VehicleInput label="Username" placeholder="Enter username" required />
+      <form onSubmit={formik.handleSubmit} className="flex flex-col">
+        <VehicleInput
+          label="Username"
+          name="username"
+          placeholder="Enter username"
+          required
+          value={formik.values.username}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.errors.username}
+          touched={formik.touched.username}
+        />
 
         <VehicleInput
           label="Password"
+          name="password"
           type="password"
           placeholder="Enter password"
           required
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.errors.password}
+          touched={formik.touched.password}
         />
 
-        {/* ✅ VehicleButton */}
-        <VehicleButton text="Login" type="submit" align="center" />
+        {/* ✅ Button */}
+        <div className="mt-4">
+          <VehicleButton text="Login" type="submit" align="center" />
+        </div>
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{" "}

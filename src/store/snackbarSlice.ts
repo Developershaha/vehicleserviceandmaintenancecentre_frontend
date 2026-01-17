@@ -15,11 +15,11 @@ export interface SnackbarState {
 
 const initialState: SnackbarState = {
   snackbarOpen: false,
-  snackbarType: "info",
+  snackbarType: "success",
   snackbarMessage: "",
-  snackbarAutoHideDuration: 3,
+  snackbarAutoHideDuration: 4,
   snackbarVertical: "top",
-  snackbarHorizontal: "right",
+  snackbarHorizontal: "center",
 };
 
 const snackbarSlice = createSlice({
