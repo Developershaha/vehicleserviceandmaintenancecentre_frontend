@@ -139,19 +139,6 @@ const Register = () => {
             />
           </div>
 
-          {/* 📧 Email (full width) */}
-          <VehicleInput
-            label="Email"
-            name="email"
-            type="email"
-            required
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.email}
-            touched={formik.touched.email}
-          />
-
           {/* 🔐 Passwords */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
@@ -178,7 +165,18 @@ const Register = () => {
               touched={formik.touched.confirmPassword}
             />
           </div>
-
+          {/* 📧 Email (full width) */}
+          <VehicleInput
+            label="Email"
+            name="email"
+            type="email"
+            required
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.email}
+            touched={formik.touched.email}
+          />
           {/* ✅ Button */}
           <div className="pt-2">
             <VehicleButton text="Register" type="submit" align="center" />
