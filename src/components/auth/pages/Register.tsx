@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { showSnackbar } from "../../../store/snackbarSlice";
-import { useAppDispatch } from "../../../store/hook";
+
 import { authStyles } from "./authStyles";
+import { useAppDispatch } from "../../../store/hook";
+import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
 
 const Register = () => {
@@ -25,26 +26,10 @@ const Register = () => {
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      dispatch(
-        showSnackbar({
-          message: "Password and Confirm Password do not match",
-          type: "error",
-          duration: 4,
-          vertical: "top",
-          horizontal: "center",
-        }),
-      );
-      return;
-    }
-
     dispatch(
       showSnackbar({
         message: "Registration successful. Please login.",
         type: "success",
-        duration: 4,
-        vertical: "top",
-        horizontal: "center",
       }),
     );
 

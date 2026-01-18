@@ -12,10 +12,7 @@ const Navbar = () => {
       showSnackbar({
         message: "You have been logged out successfully.",
         type: "success",
-        duration: 3,
-        vertical: "top",
-        horizontal: "center",
-      })
+      }),
     );
 
     // ➡️ redirect to login

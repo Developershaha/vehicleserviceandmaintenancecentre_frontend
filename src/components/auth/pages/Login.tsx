@@ -3,11 +3,19 @@ import { useFormik } from "formik";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 
-import logo from "../assets/logo.png";
 import VehicleButton from "../../common/VehicleButton";
 import VehicleInput from "../../common/VehicleInput";
 import VehicleLayout from "../../common/VehicleLayout";
-
+import { object, string } from "yup";
+import { loginApi } from "./apis/loginApi";
+import { setJwt } from "../../../store/authSlice";
+import logo from "../../../assets/logo.png";
+const validationSchema = object({
+  username: string().required("Username required"),
+  password: string()
+    .min(8, "Minimum 8 characters required")
+    .required("Password required"),
+});
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -17,36 +25,35 @@ const Login = () => {
       username: "",
       password: "",
     },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        console.log("called");
+        const response = await loginApi(values);
 
-    validate: (values) => {
-      const errors: any = {};
+        const { Jwt, RefreshToken } = response.data.entity ?? {};
+        if (response?.data?.validationCode === "user.login.success") {
+          dispatch(setJwt(Jwt));
+          localStorage.setItem("refreshToken", RefreshToken);
 
-      if (!values.username) {
-        errors.username = "Username required";
+          dispatch(
+            showSnackbar({
+              message: "Login successfully",
+              type: "success",
+            }),
+          );
+
+          navigate("/dashboard");
+        }
+      } catch (err) {
+        console.log("err", err);
+        dispatch(
+          showSnackbar({
+            message: "Invalid username or password",
+            type: "error",
+          }),
+        );
       }
-
-      if (!values.password) {
-        errors.password = "Password required";
-      }
-
-      return errors;
-    },
-
-    onSubmit: (values) => {
-      const postObj = {
-        username: values.username,
-        password: values.password,
-      };
-
-      console.log("POST OBJ 👉", postObj);
-
-      dispatch(
-        showSnackbar({
-          message: "Login successfully",
-        }),
-      );
-
-      navigate("/dashboard");
     },
   });
 
@@ -86,17 +93,17 @@ const Login = () => {
         <div className="mt-4">
           <VehicleButton text="Login" type="submit" align="center" />
         </div>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <span
-            className="cursor-pointer text-blue-600 hover:underline"
-            onClick={() => navigate("/register")}
-          >
-            Register
-          </span>
-        </p>
       </form>
+
+      <p className="mt-6 text-center text-sm text-gray-600">
+        Don’t have an account?{" "}
+        <span
+          className="cursor-pointer text-blue-600 hover:underline"
+          onClick={() => navigate("/register")}
+        >
+          Register
+        </span>
+      </p>
     </VehicleLayout>
   );
 };

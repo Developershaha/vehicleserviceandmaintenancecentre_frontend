@@ -21,11 +21,15 @@ const processQueue = (error: any, token: string | null) => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "http://localhost:8087",
+//   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 axiosInstance.interceptors.request.use(async (config: any) => {
-  const jwt = store.getState().auth.jwt;
+  const jwt = store.getState()?.auth?.jwt;
   if (!jwt) return config;
 
   const decoded: JwtPayload = jwtDecode(jwt);

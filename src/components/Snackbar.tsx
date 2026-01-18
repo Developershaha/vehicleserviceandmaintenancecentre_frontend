@@ -23,9 +23,9 @@ const Snackbar = () => {
   const verticalClass = snackbarVertical === "top" ? "top-6" : "bottom-6";
 
   const horizontalClass =
-    snackbarHorizontal === "left"
+    snackbarHorizontal === "center"
       ? "left-6"
-      : snackbarHorizontal === "right"
+      : snackbarHorizontal === "center"
       ? "right-6"
       : "left-1/2 -translate-x-1/2";
 

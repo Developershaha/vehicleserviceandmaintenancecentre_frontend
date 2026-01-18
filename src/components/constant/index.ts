@@ -1,3 +1,2 @@
-const BASE_URL = "http://localhost:8080"; // change if needed
-
+const BASE_URL = "http://localhost:8087/vehicle/";
 export default BASE_URL;
