@@ -83,55 +83,63 @@ const Register = () => {
 
   return (
     <div className={authStyles.pageWrapper}>
-      <div className={authStyles.card}>
+      <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-xl bg-white p-8 md:p-10 shadow-lg">
         <h1 className={authStyles.title}>Create Account</h1>
         <p className={authStyles.subtitle}>
           Register to access Vehicle Service Centre
         </p>
         <form onSubmit={formik.handleSubmit} className="flex flex-col">
-          <VehicleInput
-            label="First Name"
-            name="firstName"
-            required
-            value={formik.values.firstName}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.firstName}
-            touched={formik.touched.firstName}
-          />
-          <VehicleInput
-            label="Last Name"
-            name="lastName"
-            required
-            value={formik.values.lastName}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.lastName}
-            touched={formik.touched.lastName}
-          />
+          {/* 👤 First & Last Name */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <VehicleInput
+              label="First Name"
+              name="firstName"
+              required
+              value={formik.values.firstName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.firstName}
+              touched={formik.touched.firstName}
+            />
 
-          <VehicleInput
-            label="Username"
-            name="username"
-            required
-            value={formik.values.username}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.username}
-            touched={formik.touched.username}
-          />
+            <VehicleInput
+              label="Last Name"
+              name="lastName"
+              required
+              value={formik.values.lastName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.lastName}
+              touched={formik.touched.lastName}
+            />
+          </div>
 
-          <VehicleInput
-            label="Mobile Number"
-            name="mobile"
-            required
-            value={formik.values.mobile}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.mobile}
-            touched={formik.touched.mobile}
-          />
+          {/* 👤 Username & Mobile */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <VehicleInput
+              label="Username"
+              name="username"
+              required
+              value={formik.values.username}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.username}
+              touched={formik.touched.username}
+            />
 
+            <VehicleInput
+              label="Mobile Number"
+              name="mobile"
+              required
+              value={formik.values.mobile}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.mobile}
+              touched={formik.touched.mobile}
+            />
+          </div>
+
+          {/* 📧 Email (full width) */}
           <VehicleInput
             label="Email"
             name="email"
@@ -144,30 +152,34 @@ const Register = () => {
             touched={formik.touched.email}
           />
 
-          <VehicleInput
-            label="Password"
-            name="password"
-            type="password"
-            required
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.password}
-            touched={formik.touched.password}
-          />
+          {/* 🔐 Passwords */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <VehicleInput
+              label="Password"
+              name="password"
+              type="password"
+              required
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.password}
+              touched={formik.touched.password}
+            />
 
-          <VehicleInput
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            required
-            value={formik.values.confirmPassword}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.confirmPassword}
-            touched={formik.touched.confirmPassword}
-          />
+            <VehicleInput
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              required
+              value={formik.values.confirmPassword}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.confirmPassword}
+              touched={formik.touched.confirmPassword}
+            />
+          </div>
 
+          {/* ✅ Button */}
           <div className="pt-2">
             <VehicleButton text="Register" type="submit" align="center" />
           </div>

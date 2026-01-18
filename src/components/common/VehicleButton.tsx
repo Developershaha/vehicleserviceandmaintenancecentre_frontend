@@ -28,7 +28,7 @@ const VehicleButton = ({
         onClick={onClick}
         disabled={disabled}
         className={`
-          w-32 rounded-md bg-blue-600 py-2 text-sm font-semibold text-white
+          w-40 rounded-md bg-blue-600 py-2 text-sm font-semibold text-white
           hover:bg-blue-700 transition
           disabled:cursor-not-allowed disabled:opacity-60
           ${className}
