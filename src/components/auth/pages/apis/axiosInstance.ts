@@ -21,7 +21,7 @@ const processQueue = (error: any, token: string | null) => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8087",
+  baseURL: BASE_URL,
 //   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
