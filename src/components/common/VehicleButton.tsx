@@ -41,4 +41,3 @@ const VehicleButton = ({
 };
 
 export default VehicleButton;
-    

@@ -8,6 +8,9 @@ import VehicleInput from "../../common/VehicleInput";
 import { useFormik } from "formik";
 import { registerApi } from "./apis/loginApi";
 import { object, ref, string } from "yup";
+import { useState } from "react";
+import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
+import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
 
 const validationSchema = object({
   firstName: string().required("First name required"),
@@ -35,6 +38,8 @@ const validationSchema = object({
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [isShowPassword, setIsShowPassword] = useState(true);
+  const [isConfirmPassword, setIsConfirmPassword] = useState(true);
 
   const formik = useFormik({
     initialValues: {
@@ -144,25 +149,41 @@ const Register = () => {
             <VehicleInput
               label="Password"
               name="password"
-              type="password"
+              type={isShowPassword ? "password" : "text"}
               required
               value={formik.values.password}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.errors.password}
               touched={formik.touched.password}
+              endIcon={
+                isShowPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )
+              }
+              onEndIconClick={() => setIsShowPassword((prev) => !prev)}
             />
 
             <VehicleInput
               label="Confirm Password"
               name="confirmPassword"
-              type="password"
+              type={isConfirmPassword ? "password" : "text"}
               required
               value={formik.values.confirmPassword}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.errors.confirmPassword}
               touched={formik.touched.confirmPassword}
+              endIcon={
+                isConfirmPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )
+              }
+              onEndIconClick={() => setIsConfirmPassword((prev) => !prev)}
             />
           </div>
           {/* 📧 Email (full width) */}

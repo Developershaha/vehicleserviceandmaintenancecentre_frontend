@@ -12,7 +12,9 @@ import { setJwt, setUserFromJwt } from "../../../store/authSlice";
 import logo from "../../../assets/logo.png";
 import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/16/solid";
+import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
+import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
+
 const validationSchema = object({
   username: string().required("Username required"),
   password: string()
