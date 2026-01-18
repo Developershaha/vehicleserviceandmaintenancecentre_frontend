@@ -1,22 +1,28 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../store/hook";
+import { useAppDispatch, useAppSelector } from "../store/hook";
 import { showSnackbar } from "../store/snackbarSlice";
+import { logout } from "../store/authSlice";
+import { logoutApi } from "./auth/pages/apis/loginApi";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const userDetails = useAppSelector((state) => state.auth);
+  const handleLogout = async () => {
+    const logoutResponse = await logoutApi(userDetails?.username ?? "");
 
-  const handleLogout = () => {
-    // 🔔 show snackbar
-    dispatch(
-      showSnackbar({
-        message: "You have been logged out successfully.",
-        type: "success",
-      }),
-    );
+    if (logoutResponse?.data?.validationCode === "logout.success") {
+      dispatch(logout());
+      dispatch(
+        showSnackbar({
+          message: "You have been logged out successfully.",
+          type: "success",
+        }),
+      );
 
-    // ➡️ redirect to login
-    navigate("/");
+      // ➡️ redirect to login
+      navigate("/");
+    }
   };
 
   return (

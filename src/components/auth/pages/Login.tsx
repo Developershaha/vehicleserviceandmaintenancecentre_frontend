@@ -8,17 +8,30 @@ import VehicleInput from "../../common/VehicleInput";
 import VehicleLayout from "../../common/VehicleLayout";
 import { object, string } from "yup";
 import { loginApi } from "./apis/loginApi";
-import { setJwt } from "../../../store/authSlice";
+import { setJwt, setUserFromJwt } from "../../../store/authSlice";
 import logo from "../../../assets/logo.png";
+import { jwtDecode } from "jwt-decode";
+import { useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/16/solid";
 const validationSchema = object({
   username: string().required("Username required"),
   password: string()
     .min(8, "Minimum 8 characters required")
     .required("Password required"),
 });
+// types/jwt.ts
+export interface JwtPayload {
+  sub: string;
+  username: string;
+  userRoles: string;
+  iat: number;
+  exp: number;
+}
+
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [isShowPassword, setIsShowPassword] = useState(true);
 
   const formik = useFormik({
     initialValues: {
@@ -28,12 +41,22 @@ const Login = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        console.log("called");
         const response = await loginApi(values);
 
         const { Jwt, RefreshToken } = response.data.entity ?? {};
         if (response?.data?.validationCode === "user.login.success") {
+          const userDetails: JwtPayload = jwtDecode(Jwt);
+          console.log("Jwt", userDetails);
+
           dispatch(setJwt(Jwt));
+
+          dispatch(
+            setUserFromJwt({
+              username: userDetails.username,
+              userId: userDetails.sub,
+              role: userDetails.userRoles,
+            }),
+          );
           localStorage.setItem("refreshToken", RefreshToken);
 
           dispatch(
@@ -56,7 +79,11 @@ const Login = () => {
       }
     },
   });
-
+  const icon = isShowPassword ? (
+    <EyeSlashIcon className="h-5 w-5" />
+  ) : (
+    <EyeIcon className="h-5 w-5" />
+  );
   return (
     <VehicleLayout
       logo={<img src={logo} alt="Logo" className="max-w-[300px]" />}
@@ -76,19 +103,19 @@ const Login = () => {
           error={formik.errors.username}
           touched={formik.touched.username}
         />
-
         <VehicleInput
           label="Password"
           name="password"
-          type="password"
+          type={isShowPassword ? "password" : "text"}
           required
           value={formik.values.password}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           error={formik.errors.password}
           touched={formik.touched.password}
-        />
-
+          endIcon={icon}
+          onEndIconClick={() => setIsShowPassword((prev) => !prev)}
+        />{" "}
         {/* ✅ Button */}
         <div className="mt-4">
           <VehicleButton text="Login" type="submit" align="center" />

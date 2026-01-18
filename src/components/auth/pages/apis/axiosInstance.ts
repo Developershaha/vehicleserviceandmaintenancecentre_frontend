@@ -1,14 +1,10 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
 import BASE_URL from "../../../constant";
 import { logout, setJwt } from "../../../../store/authSlice";
 import { showSnackbar } from "../../../../store/snackbarSlice";
 import { store } from "../../../../store/store";
-
-interface JwtPayload {
-  exp: number;
-}
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -22,7 +18,7 @@ const processQueue = (error: any, token: string | null) => {
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-//   withCredentials: true,
+  //   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -34,7 +30,7 @@ axiosInstance.interceptors.request.use(async (config: any) => {
 
   const decoded: JwtPayload = jwtDecode(jwt);
   const isExpired = dayjs.unix(decoded.exp).diff(dayjs()) < 5000;
-
+  console.log(dayjs.unix(decoded.exp).diff(dayjs()), "isExpired");
   if (!isExpired) {
     config.headers.Authorization = `Bearer ${jwt}`;
     return config;

@@ -1,40 +1,85 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
 import { authStyles } from "./authStyles";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
 
+import VehicleInput from "../../common/VehicleInput";
+import { useFormik } from "formik";
+import { registerApi } from "./apis/loginApi";
+import { object, ref, string } from "yup";
+
+const validationSchema = object({
+  firstName: string().required("First name required"),
+  lastName: string().required("Last name required"),
+
+  username: string()
+    .min(4, "Minimum 4 characters required")
+    .required("Username required"),
+
+  mobile: string()
+    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+    .required("Mobile number required"),
+
+  email: string().email("Invalid email").required("Email required"),
+
+  password: string()
+    .min(8, "Minimum 8 characters required")
+    .required("Password required"),
+
+  confirmPassword: string()
+    .oneOf([ref("password")], "Passwords do not match")
+    .required("Confirm password required"),
+});
+
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    mobile: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      mobile: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        console.log("Register Payload:", values);
+        const payload = {
+          useUsername: values.username,
+          useTitle: "Mr", // or dynamic later
+          useFirstName: values.firstName,
+          useSurname: values.lastName,
+          useEmail: values.email,
+          useMobile: values.mobile,
+          usePassword: values.password,
+        };
+
+        await registerApi(payload);
+
+        dispatch(
+          showSnackbar({
+            message: "Registration successful. Please login.",
+            type: "success",
+          }),
+        );
+
+        navigate("/");
+      } catch (err) {
+        dispatch(
+          showSnackbar({
+            message: "Registration failed",
+            type: "error",
+          }),
+        );
+      }
+    },
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    dispatch(
-      showSnackbar({
-        message: "Registration successful. Please login.",
-        type: "success",
-      }),
-    );
-
-    navigate("/");
-  };
 
   return (
     <div className={authStyles.pageWrapper}>
@@ -43,72 +88,88 @@ const Register = () => {
         <p className={authStyles.subtitle}>
           Register to access Vehicle Service Centre
         </p>
-
-        <form onSubmit={handleRegister} className={authStyles.form}>
-          <input
-            type="text"
+        <form onSubmit={formik.handleSubmit} className="flex flex-col">
+          <VehicleInput
+            label="First Name"
             name="firstName"
-            placeholder="First Name"
-            className={authStyles.input}
-            value={form.firstName}
-            onChange={handleChange}
             required
+            value={formik.values.firstName}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.firstName}
+            touched={formik.touched.firstName}
           />
-
-          <input
-            type="text"
+          <VehicleInput
+            label="Last Name"
             name="lastName"
-            placeholder="Last Name"
-            className={authStyles.input}
-            value={form.lastName}
-            onChange={handleChange}
             required
+            value={formik.values.lastName}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.lastName}
+            touched={formik.touched.lastName}
           />
 
-          <input
-            type="tel"
+          <VehicleInput
+            label="Username"
+            name="username"
+            required
+            value={formik.values.username}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.username}
+            touched={formik.touched.username}
+          />
+
+          <VehicleInput
+            label="Mobile Number"
             name="mobile"
-            placeholder="Mobile Number"
-            className={authStyles.input}
-            value={form.mobile}
-            onChange={handleChange}
-            pattern="[0-9]{10}"
             required
+            value={formik.values.mobile}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.mobile}
+            touched={formik.touched.mobile}
           />
 
-          <input
-            type="email"
+          <VehicleInput
+            label="Email"
             name="email"
-            placeholder="Email Address"
-            className={authStyles.input}
-            value={form.email}
-            onChange={handleChange}
+            type="email"
             required
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.email}
+            touched={formik.touched.email}
           />
 
-          <input
-            type="password"
+          <VehicleInput
+            label="Password"
             name="password"
-            placeholder="Password"
-            className={authStyles.input}
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-
-          <input
             type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            className={authStyles.input}
-            value={form.confirmPassword}
-            onChange={handleChange}
             required
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.password}
+            touched={formik.touched.password}
           />
 
-          {/* ✅ Common Button */}
+          <VehicleInput
+            label="Confirm Password"
+            name="confirmPassword"
+            type="password"
+            required
+            value={formik.values.confirmPassword}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.confirmPassword}
+            touched={formik.touched.confirmPassword}
+          />
+
           <div className="pt-2">
-            <VehicleButton text="Register" />
+            <VehicleButton text="Register" type="submit" align="center" />
           </div>
         </form>
 
