@@ -11,6 +11,8 @@ import { object, ref, string } from "yup";
 import { useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
+import VehicleAutoSelectField from "../../common/VehicleAutoSelectField";
+import { TITLE_OPTIONS } from "../../common/common";
 
 const validationSchema = object({
   firstName: string().required("First name required"),
@@ -40,8 +42,16 @@ const Register = () => {
   const dispatch = useAppDispatch();
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [isConfirmPassword, setIsConfirmPassword] = useState(true);
-
-  const formik = useFormik({
+  const formik = useFormik<{
+    firstName: string;
+    lastName: string;
+    username: string;
+    mobile: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    gender: GenderOption;
+  }>({
     initialValues: {
       firstName: "",
       lastName: "",
@@ -50,11 +60,13 @@ const Register = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      gender: null, //
     },
     validationSchema,
+
     onSubmit: async (values) => {
+      console.log("first");
       try {
-        console.log("Register Payload:", values);
         const payload = {
           useUsername: values.username,
           useTitle: "Mr", // or dynamic later
@@ -63,9 +75,12 @@ const Register = () => {
           useEmail: values.email,
           useMobile: values.mobile,
           usePassword: values.password,
+          useActive: 1,
         };
-
+        console.log("Register value:", values);
+        console.log("Register Payload:", payload);
         await registerApi(payload);
+        // return;
 
         dispatch(
           showSnackbar({
@@ -96,6 +111,28 @@ const Register = () => {
         <form onSubmit={formik.handleSubmit} className="flex flex-col">
           {/* 👤 First & Last Name */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <VehicleAutoSelectField
+              label="Title"
+              name="gender"
+              value={formik.values.gender}
+              options={TITLE_OPTIONS}
+              onChange={(val) => formik.setFieldValue("gender", val)}
+              onBlur={() => formik.setFieldTouched("gender", true)}
+              clearable
+              error={formik.touched.gender && formik.errors.gender}
+            />{" "}
+            <VehicleInput
+              label="Username"
+              name="username"
+              required
+              value={formik.values.username}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.username}
+              touched={formik.touched.username}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="First Name"
               name="firstName"
@@ -106,7 +143,6 @@ const Register = () => {
               error={formik.errors.firstName}
               touched={formik.touched.firstName}
             />
-
             <VehicleInput
               label="Last Name"
               name="lastName"
@@ -122,17 +158,6 @@ const Register = () => {
           {/* 👤 Username & Mobile */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
-              label="Username"
-              name="username"
-              required
-              value={formik.values.username}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.username}
-              touched={formik.touched.username}
-            />
-
-            <VehicleInput
               label="Mobile Number"
               name="mobile"
               required
@@ -141,6 +166,17 @@ const Register = () => {
               onBlur={formik.handleBlur}
               error={formik.errors.mobile}
               touched={formik.touched.mobile}
+            />
+            <VehicleInput
+              label="Email"
+              name="email"
+              type="email"
+              required
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.email}
+              touched={formik.touched.email}
             />
           </div>
 
@@ -187,17 +223,7 @@ const Register = () => {
             />
           </div>
           {/* 📧 Email (full width) */}
-          <VehicleInput
-            label="Email"
-            name="email"
-            type="email"
-            required
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.email}
-            touched={formik.touched.email}
-          />
+
           {/* ✅ Button */}
           <div className="pt-2">
             <VehicleButton text="Register" type="submit" align="center" />

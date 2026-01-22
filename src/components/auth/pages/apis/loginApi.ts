@@ -1,5 +1,6 @@
+import BASE_URL from "../../../constant";
 import axiosInstance from "./axiosInstance";
-
+import axios from "axios";
 export const loginApi = (payload: { username: string; password: string }) => {
   return axiosInstance.post("auth/login", payload);
 };
@@ -23,5 +24,5 @@ export interface RegisterApiPayload {
 }
 
 export const registerApi = (payload: RegisterApiPayload) => {
-  return axiosInstance.post("/auth/register", payload);
+  return axios.post(`${BASE_URL}auth/register`, payload);
 };

@@ -48,8 +48,6 @@ const Login = () => {
         const { Jwt, RefreshToken } = response.data.entity ?? {};
         if (response?.data?.validationCode === "user.login.success") {
           const userDetails: JwtPayload = jwtDecode(Jwt);
-          console.log("Jwt", userDetails);
-
           dispatch(setJwt(Jwt));
 
           dispatch(
