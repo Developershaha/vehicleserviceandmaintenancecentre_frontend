@@ -3,7 +3,7 @@ import Navbar from "../../Navbar";
 const Services = () => {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="p-6">
         <h1 className="text-2xl font-bold text-gray-800">Services</h1>
 

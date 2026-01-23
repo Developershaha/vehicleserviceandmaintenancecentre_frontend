@@ -4,7 +4,7 @@ import Navbar from "../../Navbar";
 const Dashboard = () => {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="p-6">
         <VehicleModuleCard />
       </div>
