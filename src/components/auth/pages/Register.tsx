@@ -76,6 +76,7 @@ const Register = () => {
           useMobile: values.mobile,
           usePassword: values.password,
           useActive: 1,
+          useType:"customer"
         };
         console.log("Register value:", values);
         console.log("Register Payload:", payload);
