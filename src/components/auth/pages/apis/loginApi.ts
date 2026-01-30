@@ -1,3 +1,4 @@
+import type { AutoSelectOption } from "../../../common/VehicleAutoSelectField";
 import BASE_URL from "../../../constant";
 import axiosInstance from "./axiosInstance";
 import axios from "axios";
@@ -15,7 +16,7 @@ export const logoutApi = (username: string) => {
 
 export interface RegisterApiPayload {
   useUsername: string;
-  useTitle: string;
+  useTitle: AutoSelectOption | string | null;
   useFirstName: string;
   useSurname: string;
   useEmail: string;

@@ -8,7 +8,7 @@ import VehicleInput from "../../common/VehicleInput";
 import VehicleLayout from "../../common/VehicleLayout";
 import { object, string } from "yup";
 import { loginApi } from "./apis/loginApi";
-import { setJwt, setUserFromJwt } from "../../../store/authSlice";
+import { setAuthTokens, setUserFromJwt } from "../../../store/authSlice";
 import logo from "../../../assets/logo.png";
 import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
@@ -46,22 +46,28 @@ const Login = () => {
         const response = await loginApi(values);
 
         const { Jwt, RefreshToken } = response.data.entity ?? {};
+
         if (response?.data?.validationCode === "user.login.success") {
-          const userDetails: JwtPayload = jwtDecode(Jwt);
-          dispatch(setJwt(Jwt));
+          const decoded: any = jwtDecode(Jwt);
+
+          dispatch(
+            setAuthTokens({
+              jwt: Jwt,
+              refreshToken: RefreshToken,
+            }),
+          );
 
           dispatch(
             setUserFromJwt({
-              username: userDetails.username,
-              userId: userDetails.sub,
-              role: userDetails.userRoles,
+              username: decoded.username,
+              userId: decoded.sub,
+              role: decoded.userRoles,
             }),
           );
-          localStorage.setItem("refreshToken", RefreshToken);
 
           dispatch(
             showSnackbar({
-              message: "Login successfully",
+              message: "Login successful",
               type: "success",
             }),
           );
@@ -69,7 +75,6 @@ const Login = () => {
           navigate("/dashboard");
         }
       } catch (err) {
-        console.log("err", err);
         dispatch(
           showSnackbar({
             message: "Invalid username or password",

@@ -9,7 +9,7 @@ export interface AutoSelectOption {
 export interface VehicleAutoSelectProps {
   label: string;
   name: string;
-  value: AutoSelectOption | null;
+  value: AutoSelectOption | "" | null;
   options: AutoSelectOption[];
   placeholder?: string;
   required?: boolean;

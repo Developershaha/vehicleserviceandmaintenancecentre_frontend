@@ -1,99 +1,95 @@
-import axios from "axios";
+import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
 import dayjs from "dayjs";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
 import BASE_URL from "../../../constant";
-import { logout, setJwt } from "../../../../store/authSlice";
-import { showSnackbar } from "../../../../store/snackbarSlice";
 import { store } from "../../../../store/store";
+import { logout, setAuthTokens } from "../../../../store/authSlice";
+import { showSnackbar } from "../../../../store/snackbarSlice";
+import Cookies from "universal-cookie";
+import { jwtDecode } from "jwt-decode";
 
-let isRefreshing = false;
-let failedQueue: any[] = [];
+const cookies = new Cookies();
 
-const processQueue = (error: any, token: string | null) => {
-  failedQueue.forEach((p) => {
-    error ? p.reject(error) : p.resolve(token);
-  });
-  failedQueue = [];
-};
-
-const axiosInstance = axios.create({
+const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  //   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
-axiosInstance.interceptors.request.use(async (config: any) => {
-  const jwt = store.getState()?.auth?.jwt;
+/* ---------------- REQUEST INTERCEPTOR ---------------- */
+
+axiosInstance.interceptors.request.use(async (config: AxiosRequestConfig) => {
+  const { jwt, refreshToken } = store.getState().auth;
+
   if (!jwt) return config;
 
-  const decoded: JwtPayload = jwtDecode(jwt);
+  const decoded: any = jwtDecode(jwt);
   const isExpired = dayjs.unix(decoded.exp).diff(dayjs()) < 5000;
-  console.log(dayjs.unix(decoded.exp).diff(dayjs()), "isExpired");
+
+  // ✅ Token valid
   if (!isExpired) {
-    config.headers.Authorization = `Bearer ${jwt}`;
+    config.headers = {
+      ...config.headers,
+      Authorization: `Bearer ${jwt}`,
+    };
     return config;
   }
 
-  const refreshToken = localStorage.getItem("refreshToken");
+  // ❌ No refresh token → logout
   if (!refreshToken) {
     store.dispatch(logout());
-    window.location.replace("/login");
-    return config;
+    window.location.replace("/cellmaUser/login");
+    return Promise.reject("Session expired");
   }
 
-  if (isRefreshing) {
-    return new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject });
-    }).then((token) => {
-      config.headers.Authorization = `Bearer ${token}`;
-      return config;
-    });
-  }
-
-  isRefreshing = true;
-
+  // 🔁 Refresh token flow
   try {
-    const res = await axios.post(`${BASE_URL}/user/refresh-token`, {
-      refreshToken,
-    });
+    const response = await axios.get(
+      `${BASE_URL.replace(/\/+$/, "")}/user/refresh-token`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          refreshToken,
+        },
+      },
+    );
 
-    const newJwt = res.data.entity.Jwt;
-    const newRefresh = res.data.entity.RefreshToken;
+    const { jwtToken, refreshToken: newRefreshToken } = response.data;
 
-    store.dispatch(setJwt(newJwt));
-    localStorage.setItem("refreshToken", newRefresh);
+    store.dispatch(
+      setAuthTokens({
+        jwt: jwtToken,
+        refreshToken: newRefreshToken,
+      }),
+    );
 
-    processQueue(null, newJwt);
+    config.headers = {
+      ...config.headers,
+      Authorization: `Bearer ${jwtToken}`,
+    };
 
-    config.headers.Authorization = `Bearer ${newJwt}`;
     return config;
-  } catch (err) {
-    processQueue(err, null);
+  } catch (error) {
     store.dispatch(logout());
-    window.location.replace("/login");
-    throw err;
-  } finally {
-    isRefreshing = false;
+    window.location.replace("/cellmaUser/login");
+    return Promise.reject(error);
   }
 });
-
 axiosInstance.interceptors.response.use(
-  (res) => res,
+  (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    if (error?.response?.status === 401) {
+      store.dispatch(logout());
+      window.location.replace("/");
+    }
+
+    if (error.message === "Network Error") {
       store.dispatch(
         showSnackbar({
-          message: "Session expired. Please login again.",
+          message: "Network error. Please try again.",
           type: "warning",
         }),
       );
-      store.dispatch(logout());
-      window.location.replace("/login");
     }
+
     return Promise.reject(error);
   },
 );
-
 export default axiosInstance;

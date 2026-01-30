@@ -6,19 +6,18 @@ const VehicleModuleCard = () => {
   return (
     <div
       onClick={() => navigate("/vehicles")}
-      className="cursor-pointer rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md"
+      className="cursor-pointer w-1/6 rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md"
     >
-      <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+      <div className="flex flex-col items-center gap-4">
+        {/* Square Image */}
+        <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-blue-100 text-4xl">
           🚗
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800">
-            Vehicle Management
-          </h3>
-          <p className="text-sm text-gray-500">Add & view your vehicles</p>
-        </div>
+        {/* Name Below Image */}
+        <h3 className="text-center text-lg font-semibold text-gray-800">
+          Vehicle Module
+        </h3>
       </div>
     </div>
   );

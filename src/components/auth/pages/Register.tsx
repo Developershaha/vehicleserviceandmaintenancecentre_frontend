@@ -11,7 +11,9 @@ import { object, ref, string } from "yup";
 import { useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
-import VehicleAutoSelectField from "../../common/VehicleAutoSelectField";
+import VehicleAutoSelectField, {
+  type AutoSelectOption,
+} from "../../common/VehicleAutoSelectField";
 import { TITLE_OPTIONS } from "../../common/common";
 
 const validationSchema = object({
@@ -50,7 +52,7 @@ const Register = () => {
     email: string;
     password: string;
     confirmPassword: string;
-    gender: GenderOption;
+    gender: AutoSelectOption | null;
   }>({
     initialValues: {
       firstName: "",
@@ -65,18 +67,18 @@ const Register = () => {
     validationSchema,
 
     onSubmit: async (values) => {
-      console.log("first");
+      console.log("first", values);
       try {
         const payload = {
           useUsername: values.username,
-          useTitle: "Mr", // or dynamic later
+          useTitle: values?.gender, // or dynamic later
           useFirstName: values.firstName,
           useSurname: values.lastName,
           useEmail: values.email,
           useMobile: values.mobile,
           usePassword: values.password,
           useActive: 1,
-          useType:"customer"
+          useType: "customer",
         };
         console.log("Register value:", values);
         console.log("Register Payload:", payload);
@@ -120,8 +122,10 @@ const Register = () => {
               onChange={(val) => formik.setFieldValue("gender", val)}
               onBlur={() => formik.setFieldTouched("gender", true)}
               clearable
-              error={formik.touched.gender && formik.errors.gender}
-            />{" "}
+              error={formik.touched.gender ? formik.errors.gender : undefined}
+              touched={formik.touched.gender}
+            />
+
             <VehicleInput
               label="Username"
               name="username"

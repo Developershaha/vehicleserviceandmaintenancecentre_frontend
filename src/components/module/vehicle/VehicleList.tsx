@@ -1,15 +1,30 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import VehicleButton from "../../common/VehicleButton";
+import axiosInstance from "../../auth/pages/apis/axiosInstance";
+import dayjs from "dayjs";
 
 const VehicleList = () => {
   const navigate = useNavigate();
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const vehicles = [
-    { id: 1, number: "MH12AB1234", model: "Honda City", type: "Car" },
-    { id: 2, number: "MH14CD5678", model: "Royal Enfield", type: "Bike" },
-    { id: 3, number: "MH15XY9876", model: "Hyundai i20", type: "Car" },
-    { id: 4, number: "MH16PQ1122", model: "KTM Duke", type: "Bike" },
-  ];
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  const fetchVehicles = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get("/customer/vehicles");
+      setVehicles(response?.data?.entity || []);
+    } catch (error) {
+      console.error("Error fetching vehicles", error);
+      setVehicles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -24,12 +39,18 @@ const VehicleList = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
         <table className="min-w-full border-collapse">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                ID
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Vehicle Number
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Brand
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Model
@@ -37,32 +58,84 @@ const VehicleList = () => {
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                 Type
               </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Manufacturing Year
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Status
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Created By
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Created Date
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            {vehicles.map((vehicle) => (
-              <tr
-                key={vehicle.id}
-                className="border-t hover:bg-gray-50 transition"
-              >
-                <td className="px-4 py-3 text-sm text-gray-800">
-                  {vehicle.number}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800">
-                  {vehicle.model}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
-                  {vehicle.type}
-                </td>
-              </tr>
-            ))}
-
-            {/* Empty state */}
-            {vehicles.length === 0 && (
+            {/* Loading */}
+            {loading && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={9}
+                  className="px-4 py-6 text-center text-sm text-gray-500"
+                >
+                  Loading vehicles...
+                </td>
+              </tr>
+            )}
+
+            {/* Data */}
+            {!loading &&
+              vehicles.map((vehicle) => (
+                <tr
+                  key={vehicle.vehId}
+                  className="border-t transition hover:bg-gray-50"
+                >
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {vehicle.vehId}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800">
+                    {vehicle.vehVehicleNumber}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800">
+                    {vehicle.vehBrand}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800">
+                    {vehicle.vehModel}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700 capitalize">
+                    {vehicle.vehVehicleType}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {vehicle.vehManufacturingYear}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        vehicle.vehRecordStatus === "approved"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {vehicle.vehRecordStatus}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {vehicle.vehUseUsername}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {dayjs(vehicle.vehCreated).format("DD/MM/YYYY")}
+                  </td>
+                </tr>
+              ))}
+
+            {/* Empty state */}
+            {!loading && vehicles.length === 0 && (
+              <tr>
+                <td
+                  colSpan={9}
                   className="px-4 py-6 text-center text-sm text-gray-500"
                 >
                   No vehicles found

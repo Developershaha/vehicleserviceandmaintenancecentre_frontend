@@ -9,6 +9,8 @@ import {
   type AddVehiclePayload,
 } from "../components/module/hooks/useVehicle";
 import type { AddVehicleFormValues } from "../components/module/types/vehicle";
+import VehicleAutoSelectField from "../components/common/VehicleAutoSelectField";
+import { VEHICLE_TYPE_OPTIONS } from "../components/common/common";
 
 const validationSchema = Yup.object({
   vehVehicleNumber: Yup.string().required("Vehicle number required"),
@@ -78,15 +80,21 @@ const AddVehicle = () => {
               required
             />
 
-            <VehicleInput
-              label="Vehicle Type (Car / Bike)"
+            <VehicleAutoSelectField
+              label="Vehicle Type"
               name="vehVehicleType"
               value={formik.values.vehVehicleType}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.vehVehicleType}
-              touched={formik.touched.vehVehicleType}
+              options={VEHICLE_TYPE_OPTIONS}
+              onChange={(val) => formik.setFieldValue("vehVehicleType", val)}
+              onBlur={() => formik.setFieldTouched("vehVehicleType", true)}
+              clearable
               required
+              error={
+                formik.touched.vehVehicleType
+                  ? formik.errors.vehVehicleType
+                  : undefined
+              }
+              touched={formik.touched.vehVehicleType}
             />
 
             <VehicleInput
@@ -99,7 +107,6 @@ const AddVehicle = () => {
               touched={formik.touched.vehBrand}
               required
             />
-
             <VehicleInput
               label="Model"
               name="vehModel"
@@ -110,7 +117,6 @@ const AddVehicle = () => {
               touched={formik.touched.vehModel}
               required
             />
-
             <VehicleInput
               label="Manufacturing Year"
               name="vehManufacturingYear"
@@ -122,7 +128,6 @@ const AddVehicle = () => {
               touched={formik.touched.vehManufacturingYear}
               required
             />
-
             {/* Action */}
             <div className="mt-6">
               <VehicleButton text="Save Vehicle" type="submit" align="center" />
