@@ -14,6 +14,7 @@ import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
+import Cookies from "universal-cookie";
 
 const validationSchema = object({
   username: string().required("Username required"),
@@ -44,12 +45,27 @@ const Login = () => {
     onSubmit: async (values) => {
       try {
         const response = await loginApi(values);
+        const cookies = new Cookies();
 
         const { Jwt, RefreshToken } = response.data.entity ?? {};
 
         if (response?.data?.validationCode === "user.login.success") {
-          const decoded: any = jwtDecode(Jwt);
+          const decoded = jwtDecode<JwtPayload>(Jwt);
 
+          // ✅ Save tokens in cookies
+          cookies.set("jwt", Jwt, {
+            path: "/",
+            secure: true,
+            sameSite: "strict",
+          });
+
+          cookies.set("refreshToken", RefreshToken, {
+            path: "/",
+            secure: true,
+            sameSite: "strict",
+          });
+
+          // ✅ Save tokens in Redux
           dispatch(
             setAuthTokens({
               jwt: Jwt,

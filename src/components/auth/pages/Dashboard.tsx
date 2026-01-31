@@ -1,5 +1,4 @@
 import VehicleModuleCard from "../../module/vehicle/VehicleModuleCard";
-import Navbar from "../../Navbar";
 
 const Dashboard = () => {
   return (

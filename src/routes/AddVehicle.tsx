@@ -14,11 +14,12 @@ import { VEHICLE_TYPE_OPTIONS } from "../components/common/common";
 
 const validationSchema = Yup.object({
   vehVehicleNumber: Yup.string().required("Vehicle number required"),
-  vehVehicleType: Yup.string().required("Vehicle type required"),
+  vehVehicleType: Yup.mixed().required("Vehicle type required"), // ✅
   vehBrand: Yup.string().required("Brand required"),
   vehModel: Yup.string().required("Model required"),
   vehManufacturingYear: Yup.number()
-    .required("Manufacturing year required")
+    .nullable()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(1900, "Invalid year")
     .max(new Date().getFullYear(), "Future year not allowed"),
 });
@@ -29,7 +30,7 @@ const AddVehicle = () => {
   const formik = useFormik<AddVehicleFormValues>({
     initialValues: {
       vehVehicleNumber: "",
-      vehVehicleType: "", // ✅ correctly typed
+      vehVehicleType: null, // ✅ correctly typed
       vehBrand: "",
       vehModel: "",
       vehManufacturingYear: "", // ✅ string initially
@@ -38,15 +39,14 @@ const AddVehicle = () => {
     onSubmit: async (values) => {
       const payload: AddVehiclePayload = {
         vehVehicleNumber: values.vehVehicleNumber,
-        vehVehicleType: values.vehVehicleType as "car" | "bike",
+        vehVehicleType: values.vehVehicleType?.value,
         vehBrand: values.vehBrand,
         vehModel: values.vehModel,
         vehManufacturingYear: Number(values.vehManufacturingYear),
       };
 
-      console.log("Add Vehicle Payload:", payload);
       await addVehicleApi(payload);
-      // navigate("/vehicles");
+      navigate("/vehicles");
     },
   });
 
@@ -85,13 +85,13 @@ const AddVehicle = () => {
               name="vehVehicleType"
               value={formik.values.vehVehicleType}
               options={VEHICLE_TYPE_OPTIONS}
-              onChange={(val) => formik.setFieldValue("vehVehicleType", val)}
+              onChange={(val) => formik.setFieldValue("vehVehicleType", val)} // ✅ val only
               onBlur={() => formik.setFieldTouched("vehVehicleType", true)}
               clearable
               required
               error={
                 formik.touched.vehVehicleType
-                  ? formik.errors.vehVehicleType
+                  ? (formik.errors.vehVehicleType as string)
                   : undefined
               }
               touched={formik.touched.vehVehicleType}
@@ -126,7 +126,6 @@ const AddVehicle = () => {
               onBlur={formik.handleBlur}
               error={formik.errors.vehManufacturingYear}
               touched={formik.touched.vehManufacturingYear}
-              required
             />
             {/* Action */}
             <div className="mt-6">

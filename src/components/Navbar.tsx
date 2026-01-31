@@ -33,7 +33,7 @@ const Navbar = () => {
 
       <div className="flex items-center space-x-4 text-slate-900">
         <Link to="/dashboard" className="hover:underline">
-          Dashboard
+          Home
         </Link>
         <Link to="/services" className="hover:underline">
           Services

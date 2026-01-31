@@ -1,8 +1,9 @@
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
+import type { AutoSelectOption } from "../../common/VehicleAutoSelectField";
 
 export interface AddVehiclePayload {
   vehVehicleNumber: string;
-  vehVehicleType: "car" | "bike";
+  vehVehicleType: AutoSelectOption | null; // ✅ object
   vehBrand: string;
   vehModel: string;
   vehManufacturingYear: number;
