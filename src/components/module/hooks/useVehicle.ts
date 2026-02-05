@@ -18,3 +18,9 @@ export const deleteVehicleApi = (vehId: number) => {
     params: { vehId },
   });
 };
+
+export const checkUsernameDuplicateApi = (username: string) => {
+  return axiosInstance.get("/vehicle/auth/user/duplicate-check", {
+    params: { username },
+  });
+};

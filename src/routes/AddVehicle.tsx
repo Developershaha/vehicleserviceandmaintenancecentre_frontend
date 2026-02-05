@@ -111,7 +111,7 @@ const AddVehicle = () => {
               value={formik.values.vehVehicleType}
               options={VEHICLE_TYPE_OPTIONS}
               onChange={(val) => formik.setFieldValue("vehVehicleType", val)}
-              onBlur={() => formik.setFieldTouched("vehVehicleType", true)}
+              onBlur={formik.handleBlur} // ✅ important
               clearable
               required
               error={
