@@ -8,13 +8,15 @@ import VehicleInput from "../../common/VehicleInput";
 import { useFormik } from "formik";
 import { registerApi } from "./apis/loginApi";
 import { object, ref, string } from "yup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
 import VehicleAutoSelectField, {
   type AutoSelectOption,
 } from "../../common/VehicleAutoSelectField";
 import { TITLE_OPTIONS } from "../../common/common";
+import { checkUsernameDuplicateApi } from "../../module/hooks/useVehicle";
+import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
 
 const validationSchema = object({
   firstName: string().required("First name required"),
@@ -64,14 +66,20 @@ const Register = () => {
       confirmPassword: "",
       gender: null, //
     },
-    validationSchema,
+    validateOnChange: false,
+    validateOnBlur: false,
 
+    validationSchema,
     onSubmit: async (values) => {
-      console.log("first", values);
+      // ✅ force Yup validation
+      if (formik.errors.username === "Username already exists") {
+        return; // ⛔ stop submit, keep error
+      }
+
       try {
         const payload = {
           useUsername: values.username,
-          useTitle: values?.gender, // or dynamic later
+          useTitle: values.gender,
           useFirstName: values.firstName,
           useSurname: values.lastName,
           useEmail: values.email,
@@ -80,8 +88,8 @@ const Register = () => {
           useActive: 1,
           useType: "customer",
         };
+
         await registerApi(payload);
-        // return;
 
         dispatch(
           showSnackbar({
@@ -101,6 +109,32 @@ const Register = () => {
       }
     },
   });
+  const debouncedUsername = useDebouncedValue(formik.values.username, 500);
+
+  useEffect(() => {
+    if (!debouncedUsername || debouncedUsername.length <= 4) {
+      formik.setFieldError("username", undefined);
+      return;
+    }
+
+    const checkDuplicate = async () => {
+      try {
+        const response = await checkUsernameDuplicateApi(debouncedUsername);
+
+        if (response?.data?.validationCode === "user.already.exist") {
+          formik.setFieldTouched("username", true, false); // ✅ REQUIRED
+          formik.setFieldError("username", "Username already exists");
+          console.log("first", formik.errors);
+        } else {
+          formik.setFieldError("username", undefined);
+        }
+      } catch (error) {
+        console.error("Username duplicate check failed", error);
+      }
+    };
+
+    checkDuplicate();
+  }, [debouncedUsername]);
 
   return (
     <div className={authStyles.pageWrapper}>

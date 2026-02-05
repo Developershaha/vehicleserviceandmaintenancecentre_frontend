@@ -30,11 +30,11 @@ const snackbarSlice = createSlice({
       state,
       action: PayloadAction<{
         message: string;
-        type?: SnackbarType;
+        type?: SnackbarType | undefined;
         duration?: number;
         vertical?: SnackbarVertical;
         horizontal?: SnackbarHorizontal;
-      }>
+      }>,
     ) => {
       state.snackbarOpen = true;
       state.snackbarMessage = action.payload.message;

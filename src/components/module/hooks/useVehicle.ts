@@ -1,5 +1,7 @@
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import type { AutoSelectOption } from "../../common/VehicleAutoSelectField";
+import axios from "axios";
+import BASE_URL from "../../constant";
 
 export interface AddVehiclePayload {
   vehVehicleNumber: string;
@@ -20,7 +22,7 @@ export const deleteVehicleApi = (vehId: number) => {
 };
 
 export const checkUsernameDuplicateApi = (username: string) => {
-  return axiosInstance.get("/vehicle/auth/user/duplicate-check", {
+  return axios.get(`${BASE_URL}auth/user/duplicate-check`, {
     params: { username },
   });
 };
