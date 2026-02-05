@@ -3,7 +3,6 @@ import { authStyles } from "./authStyles";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
-
 import VehicleInput from "../../common/VehicleInput";
 import { useFormik } from "formik";
 import { registerApi } from "./apis/loginApi";
@@ -18,34 +17,14 @@ import { TITLE_OPTIONS } from "../../common/common";
 import { checkUsernameDuplicateApi } from "../../module/hooks/useVehicle";
 import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
 
-const validationSchema = object({
-  firstName: string().required("First name required"),
-  lastName: string().required("Last name required"),
-
-  username: string()
-    .min(4, "Minimum 4 characters required")
-    .required("Username required"),
-
-  mobile: string()
-    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
-    .required("Mobile number required"),
-
-  email: string().email("Invalid email").required("Email required"),
-
-  password: string()
-    .min(8, "Minimum 8 characters required")
-    .required("Password required"),
-
-  confirmPassword: string()
-    .oneOf([ref("password")], "Passwords do not match")
-    .required("Confirm password required"),
-});
-
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [isConfirmPassword, setIsConfirmPassword] = useState(true);
+  const [usernameError, setUsernameError] = useState<string | undefined>();
+
   const formik = useFormik<{
     firstName: string;
     lastName: string;
@@ -64,18 +43,36 @@ const Register = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      gender: null, //
+      gender: null,
     },
-    validateOnChange: false,
-    validateOnBlur: false,
 
-    validationSchema,
+    validationSchema: object({
+      firstName: string().required("First name required"),
+      lastName: string().required("Last name required"),
+
+      username: string()
+        .min(4, "Minimum 4 characters required")
+        .required("Username required"),
+
+      mobile: string()
+        .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+        .required("Mobile number required"),
+
+      email: string().email("Invalid email").required("Email required"),
+
+      password: string()
+        .min(8, "Minimum 8 characters required")
+        .required("Password required"),
+
+      confirmPassword: string()
+        .oneOf([ref("password")], "Passwords do not match")
+        .required("Confirm password required"),
+    }),
+    validate: () => {
+      return usernameError ? { username: usernameError } : {};
+    },
+
     onSubmit: async (values) => {
-      // ✅ force Yup validation
-      if (formik.errors.username === "Username already exists") {
-        return; // ⛔ stop submit, keep error
-      }
-
       try {
         const payload = {
           useUsername: values.username,
@@ -109,33 +106,38 @@ const Register = () => {
       }
     },
   });
-  const debouncedUsername = useDebouncedValue(formik.values.username, 500);
 
+  /* -------------------- Debounced Username Check -------------------- */
+  const debouncedUsername = useDebouncedValue(formik.values.username, 500);
   useEffect(() => {
-    if (!debouncedUsername || debouncedUsername.length <= 4) {
-      formik.setFieldError("username", undefined);
+    if (!debouncedUsername || debouncedUsername.length < 4) {
+      // setUsernameError(undefined);
       return;
     }
 
-    const checkDuplicate = async () => {
-      try {
-        const response = await checkUsernameDuplicateApi(debouncedUsername);
+    let cancelled = false;
 
-        if (response?.data?.validationCode === "user.already.exist") {
-          formik.setFieldTouched("username", true, false); // ✅ REQUIRED
-          formik.setFieldError("username", "Username already exists");
-          console.log("first", formik.errors);
-        } else {
-          formik.setFieldError("username", undefined);
-        }
-      } catch (error) {
-        console.error("Username duplicate check failed", error);
+    const checkDuplicate = async () => {
+      const res = await checkUsernameDuplicateApi(debouncedUsername);
+
+      if (cancelled) return;
+
+      if (res?.data?.validationCode === "user.already.exist") {
+        formik.setFieldTouched("username", true, false); // ✅ REQUIRED
+        formik.setFieldError("username", "Username already exists");
+        setUsernameError("Username already exists");
+      } else {
+        setUsernameError(undefined);
       }
     };
 
     checkDuplicate();
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedUsername]);
 
+  /* -------------------- UI -------------------- */
   return (
     <div className={authStyles.pageWrapper}>
       <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-xl bg-white p-8 md:p-10 shadow-lg">
@@ -143,8 +145,8 @@ const Register = () => {
         <p className={authStyles.subtitle}>
           Register to access Vehicle Service Centre
         </p>
+
         <form onSubmit={formik.handleSubmit} className="flex flex-col">
-          {/* 👤 First & Last Name */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleAutoSelectField
               label="Title"
@@ -169,6 +171,7 @@ const Register = () => {
               touched={formik.touched.username}
             />
           </div>
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="First Name"
@@ -180,6 +183,7 @@ const Register = () => {
               error={formik.errors.firstName}
               touched={formik.touched.firstName}
             />
+
             <VehicleInput
               label="Last Name"
               name="lastName"
@@ -192,7 +196,6 @@ const Register = () => {
             />
           </div>
 
-          {/* 👤 Username & Mobile */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="Mobile Number"
@@ -204,6 +207,7 @@ const Register = () => {
               error={formik.errors.mobile}
               touched={formik.touched.mobile}
             />
+
             <VehicleInput
               label="Email"
               name="email"
@@ -217,7 +221,6 @@ const Register = () => {
             />
           </div>
 
-          {/* 🔐 Passwords */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="Password"
@@ -236,7 +239,7 @@ const Register = () => {
                   <EyeIcon className="h-5 w-5" />
                 )
               }
-              onEndIconClick={() => setIsShowPassword((prev) => !prev)}
+              onEndIconClick={() => setIsShowPassword((p) => !p)}
             />
 
             <VehicleInput
@@ -256,12 +259,10 @@ const Register = () => {
                   <EyeIcon className="h-5 w-5" />
                 )
               }
-              onEndIconClick={() => setIsConfirmPassword((prev) => !prev)}
+              onEndIconClick={() => setIsConfirmPassword((p) => !p)}
             />
           </div>
-          {/* 📧 Email (full width) */}
 
-          {/* ✅ Button */}
           <div className="pt-2">
             <VehicleButton text="Register" type="submit" align="center" />
           </div>

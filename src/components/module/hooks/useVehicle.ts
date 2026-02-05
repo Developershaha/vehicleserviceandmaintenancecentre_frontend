@@ -26,3 +26,8 @@ export const checkUsernameDuplicateApi = (username: string) => {
     params: { username },
   });
 };
+export const checkVehicleNumberDuplicateApi = (vehVehicleNumber: string) => {
+  return axiosInstance.get("/vehicle/duplicate-check", {
+    params: { vehVehicleNumber },
+  });
+};

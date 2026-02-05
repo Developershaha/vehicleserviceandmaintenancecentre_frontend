@@ -6,6 +6,7 @@ import VehicleInput from "../components/common/VehicleInput";
 import VehicleButton from "../components/common/VehicleButton";
 import {
   addVehicleApi,
+  checkVehicleNumberDuplicateApi,
   type AddVehiclePayload,
 } from "../components/module/hooks/useVehicle";
 import type { AddVehicleFormValues } from "../components/module/types/vehicle";
@@ -13,37 +14,18 @@ import VehicleAutoSelectField from "../components/common/VehicleAutoSelectField"
 import { VEHICLE_TYPE_OPTIONS } from "../components/common/common";
 import { useAppDispatch } from "../store/hook";
 import { showSnackbar } from "../store/snackbarSlice";
+import { useDebouncedValue } from "../components/module/hooks/useDebouncedValue";
+import { useEffect, useState } from "react";
 
 const currentYear: number = new Date().getFullYear();
-
-const validationSchema = Yup.object({
-  vehVehicleNumber: Yup.string()
-    .required("Vehicle number required")
-    .min(7, "Vehicle Number size must be between 7 and 15")
-    .max(15, "Vehicle Number size must be between 7 and 15"),
-
-  vehVehicleType: Yup.mixed().required("Vehicle type required"),
-
-  vehBrand: Yup.string().required("Brand required"),
-
-  vehModel: Yup.string().required("Model required"),
-
-  vehManufacturingYear: Yup.string()
-    .required("Manufacturing year is required")
-    .matches(/^\d{4}$/, "Enter a valid 4-digit year")
-    .test("year-range", "Invalid year entered", (value?: string): boolean => {
-      if (!value) return false;
-
-      const year: number = Number(value);
-      if (Number.isNaN(year)) return false;
-
-      return year >= 1950 && year <= currentYear;
-    }),
-});
 
 const AddVehicle = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
+  const [vehicleNumberError, setVehicleNumberError] = useState<
+    string | undefined
+  >(undefined);
   const formik = useFormik<AddVehicleFormValues>({
     initialValues: {
       vehVehicleNumber: "",
@@ -52,7 +34,38 @@ const AddVehicle = () => {
       vehModel: "",
       vehManufacturingYear: "", // ✅ string initially
     },
-    validationSchema,
+    validationSchema: Yup.object({
+      vehVehicleNumber: Yup.string()
+        .required("Vehicle number required")
+        .min(7, "Vehicle Number size must be between 7 and 15")
+        .max(15, "Vehicle Number size must be between 7 and 15"),
+
+      vehVehicleType: Yup.mixed().required("Vehicle type required"),
+
+      vehBrand: Yup.string().required("Brand required"),
+
+      vehModel: Yup.string().required("Model required"),
+
+      vehManufacturingYear: Yup.string()
+        .required("Manufacturing year is required")
+        .matches(/^\d{4}$/, "Enter a valid 4-digit year")
+        .test(
+          "year-range",
+          "Invalid year entered",
+          (value?: string): boolean => {
+            if (!value) return false;
+
+            const year: number = Number(value);
+            if (Number.isNaN(year)) return false;
+
+            return year >= 1950 && year <= currentYear;
+          },
+        ),
+    }),
+    validate: () => {
+      return vehicleNumberError ? { vehVehicleNumber: vehicleNumberError } : {};
+    },
+
     onSubmit: async (values) => {
       const payload: AddVehiclePayload = {
         vehVehicleNumber: values.vehVehicleNumber,
@@ -74,6 +87,52 @@ const AddVehicle = () => {
       }
     },
   });
+  /* -------------------- Debounced Username Check -------------------- */
+  const debouncedVehicleNumber = useDebouncedValue(
+    formik.values.vehVehicleNumber,
+    500,
+  );
+
+  useEffect(() => {
+    if (!debouncedVehicleNumber || debouncedVehicleNumber.length < 7) {
+      if (vehicleNumberError !== undefined) {
+        setVehicleNumberError(undefined);
+      }
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkDuplicate = async () => {
+      try {
+        const response = await checkVehicleNumberDuplicateApi(
+          debouncedVehicleNumber,
+        );
+
+        if (cancelled) return;
+
+        if (response?.data?.validationCode === "vehicle.already.registered") {
+          if (vehicleNumberError !== "Vehicle number already registered") {
+            setVehicleNumberError("Vehicle number already registered");
+          }
+        } else {
+          if (vehicleNumberError !== undefined) {
+            setVehicleNumberError(undefined);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Vehicle duplicate check failed", error);
+        }
+      }
+    };
+
+    checkDuplicate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedVehicleNumber]);
 
   return (
     <>
