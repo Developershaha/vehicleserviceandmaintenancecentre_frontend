@@ -3,11 +3,18 @@ import { useNavigate } from "react-router-dom";
 import VehicleButton from "../../common/VehicleButton";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import dayjs from "dayjs";
+import { deleteVehicleApi } from "../hooks/useVehicle";
+import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
+import { useAppDispatch } from "../../../store/hook";
+import { showSnackbar } from "../../../store/snackbarSlice";
 
 const VehicleList = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchVehicles();
@@ -26,14 +33,37 @@ const VehicleList = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedVehId) return;
+
+    try {
+      const response = await deleteVehicleApi(selectedVehId);
+      if (response?.data?.validationCode === "vehicle.delete.success") {
+        dispatch(
+          showSnackbar({
+            message: "Vehicle deleted  successfully",
+            type: "success",
+          }),
+        );
+
+        fetchVehicles();
+      }
+    } catch (error) {
+      console.error("Error deleting vehicle", error);
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedVehId(null);
+    }
+  };
+
   return (
     <div className="p-6">
-      {/* Centered container (NOT full screen) */}
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-800">
-            My Vehicles
+            {" "}
+            Vehicles List
           </h1>
 
           <VehicleButton
@@ -49,9 +79,6 @@ const VehicleList = () => {
               <thead className="bg-gray-50">
                 <tr className="border-b">
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    ID
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Vehicle Number
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
@@ -64,10 +91,13 @@ const VehicleList = () => {
                     Type
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Mfg Year
+                    Manufacture Year
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Added Date
+                  </th>
+                  <th className="px-3 py-2 text-center font-medium text-gray-600">
+                    Delete Vehicle
                   </th>
                 </tr>
               </thead>
@@ -92,9 +122,6 @@ const VehicleList = () => {
                       key={vehicle.vehId}
                       className="border-b last:border-b-0 hover:bg-gray-50 transition"
                     >
-                      <td className="px-3 py-2 text-gray-500">
-                        {vehicle.vehId}
-                      </td>
                       <td className="px-3 py-2 font-medium text-gray-800">
                         {vehicle.vehVehicleNumber}
                       </td>
@@ -112,6 +139,22 @@ const VehicleList = () => {
                       </td>
                       <td className="px-3 py-2 text-gray-600">
                         {dayjs(vehicle?.vehCreated).format("DD/MM/YYYY")}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedVehId(vehicle.vehId);
+                            setShowDeleteModal(true);
+                          }}
+                          className="rounded-md bg-red-50 px-5 py-1.5
+               text-sm font-medium text-red-600
+               border border-red-200
+               hover:bg-red-100 hover:border-red-300
+               active:scale-95 transition-all duration-150"
+                          title="Delete"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -132,6 +175,14 @@ const VehicleList = () => {
           </div>
         </div>
       </div>
+      <ConfirmDeleteModal
+        open={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedVehId(null);
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

@@ -11,22 +11,39 @@ import {
 import type { AddVehicleFormValues } from "../components/module/types/vehicle";
 import VehicleAutoSelectField from "../components/common/VehicleAutoSelectField";
 import { VEHICLE_TYPE_OPTIONS } from "../components/common/common";
+import { useAppDispatch } from "../store/hook";
+import { showSnackbar } from "../store/snackbarSlice";
+
+const currentYear: number = new Date().getFullYear();
 
 const validationSchema = Yup.object({
-  vehVehicleNumber: Yup.string().required("Vehicle number required"),
-  vehVehicleType: Yup.mixed().required("Vehicle type required"), // ✅
+  vehVehicleNumber: Yup.string()
+    .required("Vehicle number required")
+    .min(7, "Vehicle Number size must be between 7 and 15")
+    .max(15, "Vehicle Number size must be between 7 and 15"),
+
+  vehVehicleType: Yup.mixed().required("Vehicle type required"),
+
   vehBrand: Yup.string().required("Brand required"),
+
   vehModel: Yup.string().required("Model required"),
-  vehManufacturingYear: Yup.number()
-    .nullable()
-    .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(1900, "Invalid year")
-    .max(new Date().getFullYear(), "Future year not allowed"),
+
+  vehManufacturingYear: Yup.string()
+    .required("Manufacturing year is required")
+    .matches(/^\d{4}$/, "Enter a valid 4-digit year")
+    .test("year-range", "Invalid year entered", (value?: string): boolean => {
+      if (!value) return false;
+
+      const year: number = Number(value);
+      if (Number.isNaN(year)) return false;
+
+      return year >= 1950 && year <= currentYear;
+    }),
 });
 
 const AddVehicle = () => {
   const navigate = useNavigate();
-
+  const dispatch = useAppDispatch();
   const formik = useFormik<AddVehicleFormValues>({
     initialValues: {
       vehVehicleNumber: "",
@@ -45,8 +62,16 @@ const AddVehicle = () => {
         vehManufacturingYear: Number(values.vehManufacturingYear),
       };
 
-      await addVehicleApi(payload);
-      navigate("/vehicles");
+      const response = await addVehicleApi(payload);
+      if (response?.data?.validationCode === "vehicle.add.success") {
+        dispatch(
+          showSnackbar({
+            message: "Vehicle added  successfully",
+            type: "success",
+          }),
+        );
+        navigate("/vehicles");
+      }
     },
   });
 
@@ -85,7 +110,7 @@ const AddVehicle = () => {
               name="vehVehicleType"
               value={formik.values.vehVehicleType}
               options={VEHICLE_TYPE_OPTIONS}
-              onChange={(val) => formik.setFieldValue("vehVehicleType", val)} // ✅ val only
+              onChange={(val) => formik.setFieldValue("vehVehicleType", val)}
               onBlur={() => formik.setFieldTouched("vehVehicleType", true)}
               clearable
               required
@@ -120,16 +145,17 @@ const AddVehicle = () => {
             <VehicleInput
               label="Manufacturing Year"
               name="vehManufacturingYear"
-              type="number"
               value={formik.values.vehManufacturingYear}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.errors.vehManufacturingYear}
               touched={formik.touched.vehManufacturingYear}
+              required
             />
+
             {/* Action */}
             <div className="mt-6">
-              <VehicleButton text="Save Vehicle" type="submit" align="center" />
+              <VehicleButton text="Add Vehicle" type="submit" align="center" />
             </div>
           </form>
         </div>

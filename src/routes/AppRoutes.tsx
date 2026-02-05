@@ -35,26 +35,3 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
-
-// const AppRoutes = () => {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         {/* Auth */}
-//         <Route path="/" element={<Login />} />
-//         <Route path="/register" element={<Register />} />
-
-//         {/* Main */}
-//         <Route path="/dashboard" element={<Dashboard />} />
-//         <Route path="/services" element={<Services />} />
-
-//         {/* 🚗 Vehicle Module */}
-//         <Route path="/vehicles" element={<VehicleList />} />
-//         <Route path="/vehicles/add" element={<AddVehicle />} />
-
-//         {/* Fallback */}
-//         <Route path="*" element={<NotFound />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// };

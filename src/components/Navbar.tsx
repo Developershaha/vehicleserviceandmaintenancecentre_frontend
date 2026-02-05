@@ -26,10 +26,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between bg-[oklch(95.3%_0.051_180.801)] px-6 py-4 text-white">
-      <h2 className="text-lg font-bold text-slate-900">
-        Vehicle Service Centre
-      </h2>
+    <nav className="flex items-center justify-between bg-[oklch(95.3%_0.051_180.801)] px-6 py-4 border-b border-slate-300">
+      <Link to="/dashboard">
+        <h2
+          className="inline-block rounded-md border border-slate-300 px-3 py-1
+               text-lg font-bold text-slate-900 cursor-pointer
+               hover:bg-slate-50 hover:border-slate-400 transition"
+        >
+          Vehicle Service Centre
+        </h2>
+      </Link>
 
       <div className="flex items-center space-x-4 text-slate-900">
         <Link to="/dashboard" className="hover:underline">
@@ -39,7 +45,6 @@ const Navbar = () => {
           Services
         </Link>
 
-        {/* 🚪 Logout */}
         <button
           onClick={handleLogout}
           className="rounded-md px-3 py-1.5 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition"

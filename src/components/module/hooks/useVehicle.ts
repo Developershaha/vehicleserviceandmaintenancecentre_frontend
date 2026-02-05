@@ -12,3 +12,9 @@ export interface AddVehiclePayload {
 export const addVehicleApi = (payload: AddVehiclePayload) => {
   return axiosInstance.post("customer/vehicles", payload);
 };
+
+export const deleteVehicleApi = (vehId: number) => {
+  return axiosInstance.delete("/vehicle", {
+    params: { vehId },
+  });
+};
