@@ -80,8 +80,6 @@ const Register = () => {
           useActive: 1,
           useType: "customer",
         };
-        console.log("Register value:", values);
-        console.log("Register Payload:", payload);
         await registerApi(payload);
         // return;
 
