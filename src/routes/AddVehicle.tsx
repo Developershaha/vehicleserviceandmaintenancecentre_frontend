@@ -37,8 +37,8 @@ const AddVehicle = () => {
     validationSchema: Yup.object({
       vehVehicleNumber: Yup.string()
         .required("Vehicle number required")
-        .min(7, "Vehicle Number size must be between 7 and 15")
-        .max(15, "Vehicle Number size must be between 7 and 15"),
+        .min(7, "Please enter correct vehicle number")
+        .max(15, "Please enter correct vehicle number"),
 
       vehVehicleType: Yup.mixed().required("Vehicle type required"),
 

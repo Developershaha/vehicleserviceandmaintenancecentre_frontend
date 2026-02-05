@@ -8,6 +8,7 @@ import NotFound from "../components/auth/pages/NotFound";
 import VehicleList from "../components/module/vehicle/VehicleList";
 import AddVehicle from "./AddVehicle";
 import MainLayout from "../components/common/MainLayout";
+import AppointmentList from "../components/module/appoitment/AppointmentList";
 
 const AppRoutes = () => {
   return (
@@ -25,6 +26,9 @@ const AppRoutes = () => {
           {/* 🚗 Vehicle Module */}
           <Route path="/vehicles" element={<VehicleList />} />
           <Route path="/vehicles/add" element={<AddVehicle />} />
+          {/* 🚗 Vehicle Module */}
+          <Route path="/appointments" element={<AppointmentList />} />
+          <Route path="/appointments/add" element={<AddVehicle />} />
         </Route>
 
         {/* Fallback */}
