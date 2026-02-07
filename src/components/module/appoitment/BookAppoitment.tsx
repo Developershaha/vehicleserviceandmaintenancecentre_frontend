@@ -1,11 +1,14 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import VehicleButton from "../../common/VehicleButton";
-import VehicleInput from "../../common/VehicleInput";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import VehicleAutoSelectField from "../../common/VehicleAutoSelectField";
 import VehicleTextarea from "../../common/VehicleTextarea";
 import VehicleDateInput from "../../common/VehicleDateInput";
+import { useNavigate } from "react-router-dom";
+import { showSnackbar } from "../../../store/snackbarSlice";
+import { useDispatch } from "react-redux";
+import { useAppSelector } from "../../../store/hook";
 
 interface BookAppoitmentProps {
   vehicles: any[]; // pass vehicles from parent
@@ -13,13 +16,20 @@ interface BookAppoitmentProps {
 
 const validationSchema = Yup.object({
   aptVehId: Yup.mixed().required("Vehicle type required"),
-
-  // aptDate: Yup.string()
-  //   .required("Appointment date required")
-  //   .matches(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy format"),
   aptDate: Yup.string()
     .required("Appointment date required")
-    .matches(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be dd/mm/yyyy"),
+    .matches(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be dd/mm/yyyy")
+    .test("not-past-date", "Past dates are not allowed", (value) => {
+      if (!value) return false;
+
+      const [d, m, y] = value.split("/").map(Number);
+      const selectedDate = new Date(y, m - 1, d);
+      const today = new Date();
+
+      today.setHours(0, 0, 0, 0); // normalize
+
+      return selectedDate >= today;
+    }),
 
   aptProblemDescription: Yup.string()
     .required("Problem description required")
@@ -31,6 +41,10 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
     label: v.vehVehicleNumber, // 👈 what user sees
     value: v.vehId, // 👈 what you submit
   }));
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { userType } = useAppSelector((state) => state.auth);
+  console.log("userType", userType);
 
   const formik = useFormik({
     initialValues: {
@@ -40,12 +54,20 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
     },
     validationSchema,
     onSubmit: async (values) => {
+      console.log("values", values);
+
       try {
         await axiosInstance.post("/customer/appointments", null, {
-          params: values, // ⚠️ API expects QUERY params
+          params: { ...values, aptVehId: values?.aptVehId?.value }, // ⚠️ API expects QUERY params
         });
 
-        alert("Appointment booked successfully");
+        navigate("/appointments");
+        dispatch(
+          showSnackbar({
+            message: "Vehicle deleted  successfully",
+            type: "success",
+          }),
+        );
       } catch (error) {
         console.error("Booking failed", error);
       }
@@ -72,17 +94,6 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
           touched={formik.touched.aptVehId}
         />
 
-        {/* Appointment Date */}
-        {/* <VehicleInput
-          label="Appointment Date (dd/mm/yyyy)"
-          name="aptDate"
-          value={formik.values.aptDate}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.aptDate}
-          touched={formik.touched.aptDate}
-          required
-        /> */}
         <VehicleDateInput
           label="Appointment Date"
           name="aptDate"

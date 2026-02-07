@@ -19,7 +19,6 @@ const VehicleList = () => {
 
   const fetchVehicles = async () => {
     let response;
-    console.log("userType", userType);
     try {
       setLoading(true);
       if (userType === "customer") {

@@ -41,7 +41,7 @@ const AppoitmentBookOrVehicle = () => {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white p-8 shadow-sm">
+        <div className="rounded-xl  bg-white p-8 shadow-sm">
           <h1 className="mb-6 text-xl font-semibold text-gray-800">
             Book Appointment
           </h1>

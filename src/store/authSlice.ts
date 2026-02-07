@@ -27,12 +27,10 @@ const authSlice = createSlice({
       action: PayloadAction<{
         jwt: string;
         refreshToken: string;
-        userType: string;
       }>,
     ) => {
       state.jwt = action.payload.jwt;
       state.refreshToken = action.payload.refreshToken;
-      state.userType = action.payload.userType;
     },
 
     setUserFromJwt: (
@@ -47,6 +45,14 @@ const authSlice = createSlice({
       state.userId = action.payload.userId;
       state.role = action.payload.role;
     },
+    setUserType: (
+      state,
+      action: PayloadAction<{
+        userType: string;
+      }>,
+    ) => {
+      state.userType = action.payload.userType;
+    },
 
     logout: (state) => {
       state.jwt = null;
@@ -58,5 +64,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuthTokens, setUserFromJwt, logout } = authSlice.actions;
+export const { setAuthTokens, setUserFromJwt, logout, setUserType } =
+  authSlice.actions;
 export default authSlice.reducer;

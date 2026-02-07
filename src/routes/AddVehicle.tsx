@@ -24,7 +24,6 @@ const AddVehicle = () => {
   const dispatch = useAppDispatch();
   const { state } = useLocation();
   const { redirect, vehicles } = state ?? {};
-  console.log("state", redirect, vehicles);
 
   const [vehicleNumberError, setVehicleNumberError] = useState<
     string | undefined

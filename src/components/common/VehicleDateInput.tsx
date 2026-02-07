@@ -1,35 +1,16 @@
-import React from "react";
+import { useRef } from "react";
+import { CalendarDaysIcon } from "@heroicons/react/24/outline";
 
 interface VehicleDateInputProps {
   label: string;
   name: string;
-  value: string;
+  value: string; // dd/mm/yyyy
   required?: boolean;
   error?: string;
   touched?: boolean;
   onChange: (value: string) => void;
-  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
-
-/* 🔹 helper to format dd/mm/yyyy */
-const formatDateInput = (value: string) => {
-  const digits = value.replace(/\D/g, "").slice(0, 8);
-
-  const day = digits.slice(0, 2);
-  const month = digits.slice(2, 4);
-  const year = digits.slice(4, 8);
-
-  if (digits.length <= 2) return day;
-  if (digits.length <= 4) return `${day}/${month}`;
-  return `${day}/${month}/${year}`;
-};
-
-/* 🔹 convert yyyy-mm-dd → dd/mm/yyyy */
-const fromISO = (value: string) => {
-  if (!value) return "";
-  const [y, m, d] = value.split("-");
-  return `${d}/${m}/${y}`;
-};
 
 const VehicleDateInput = ({
   label,
@@ -41,50 +22,85 @@ const VehicleDateInput = ({
   onChange,
   onBlur,
 }: VehicleDateInputProps) => {
+  const dateRef = useRef<HTMLInputElement>(null);
   const showError = Boolean(error && touched);
-  const hasValue = Boolean(value);
+
+  /* ---------- helpers ---------- */
+
+  const todayISO = new Date().toISOString().split("T")[0];
+
+  const toISO = (v: string) => {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(v)) return "";
+    const [d, m, y] = v.split("/");
+    return `${y}-${m}-${d}`;
+  };
+
+  const fromISO = (v: string) => {
+    const [y, m, d] = v.split("-");
+    return `${d}/${m}/${y}`;
+  };
+
+  /* ---------- typing handler ---------- */
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value.replace(/[^\d]/g, "");
+
+    if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+    if (v.length > 5) v = v.slice(0, 5) + "/" + v.slice(5, 9);
+
+    onChange(v);
+  };
 
   return (
     <div className="relative mb-6">
-      {/* TEXT INPUT */}
-      <input
-        type="text"
-        name={name}
-        value={value}
-        placeholder="dd/mm/yyyy"
-        onChange={(e) => onChange(formatDateInput(e.target.value))}
-        onBlur={onBlur}
-        className={`
-          peer w-full h-12 rounded-md border px-4 pt-5 pb-3 text-sm outline-none
-          ${
-            showError
-              ? "border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-          }
-        `}
-      />
-
-      {/* CALENDAR PICKER (overlayed icon input) */}
-      <input
-        type="date"
-        className="absolute right-3 top-3 h-6 w-6 opacity-0 cursor-pointer"
-        onChange={(e) => onChange(fromISO(e.target.value))}
-      />
-
-      {/* Floating Label */}
-      <label
-        className={`
-          absolute left-3 z-10 bg-white px-1 text-sm transition-all
-          ${hasValue ? "-top-2 scale-90 text-blue-600" : "top-4 text-gray-500"}
-          peer-focus:-top-2 peer-focus:scale-90 peer-focus:text-blue-600
-          ${showError ? "text-red-600 peer-focus:text-red-600" : ""}
-        `}
+      <div
+        className={`relative flex items-center rounded-md border bg-white
+        ${
+          showError
+            ? "border-red-500 ring-2 ring-red-100"
+            : "border-gray-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100"
+        }`}
       >
-        {label}
-        {required && <span className="text-red-500"> *</span>}
-      </label>
+        {/* TEXT INPUT (typing allowed) */}
+        <input
+          type="text"
+          name={name}
+          value={value}
+          onChange={handleTyping}
+          onBlur={onBlur}
+          className="peer w-full rounded-md bg-transparent px-4 pt-5 pb-2 text-sm outline-none"
+        />
 
-      {/* Error */}
+        <input
+          ref={dateRef}
+          type="date"
+          min={todayISO}
+          value={toISO(value)}
+          onChange={(e) => onChange(fromISO(e.target.value))}
+          className="absolute inset-0 opacity-0 pointer-events-none"
+        />
+
+        {/* CALENDAR ICON */}
+        <button
+          type="button"
+          onClick={() => dateRef.current?.showPicker()}
+          className="absolute right-3 top-3.5 rounded-md p-1.5
+                     text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+        >
+          <CalendarDaysIcon className="h-5 w-5" />
+        </button>
+
+        {/* FLOATING LABEL */}
+        <label
+          className={`absolute left-3 bg-white px-1 text-sm transition-all
+          ${value ? "-top-2 scale-90 text-blue-600" : "top-3.5 text-gray-400"}
+          peer-focus:-top-2 peer-focus:scale-90 peer-focus:text-blue-600
+          ${showError ? "text-red-600" : ""}`}
+        >
+          {label}
+          {required && <span className="text-red-500"> *</span>}
+        </label>
+      </div>
+
       {showError && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
