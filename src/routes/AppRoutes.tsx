@@ -9,6 +9,7 @@ import VehicleList from "../components/module/vehicle/VehicleList";
 import AddVehicle from "./AddVehicle";
 import MainLayout from "../components/common/MainLayout";
 import AppointmentList from "../components/module/appoitment/AppointmentList";
+import AppoitmentBookOrVehicle from "../components/module/appoitment/AppoitmentBookOrVehicle";
 
 const AppRoutes = () => {
   return (
@@ -28,6 +29,10 @@ const AppRoutes = () => {
           <Route path="/vehicles/add" element={<AddVehicle />} />
           {/* 🚗 Vehicle Module */}
           <Route path="/appointments" element={<AppointmentList />} />
+          <Route
+            path="/appointments/checkVehicles"
+            element={<AppoitmentBookOrVehicle />}
+          />
           <Route path="/appointments/add" element={<AddVehicle />} />
         </Route>
 

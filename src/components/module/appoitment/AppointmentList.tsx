@@ -12,27 +12,30 @@ const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [vehicles, setVehicles] = useState<any[]>([]);
+  const [AppoitnmentList, setAppoitmentList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
-
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/customer/vehicles");
-      setVehicles(response?.data?.entity || []);
+      const responseVehicle = await axiosInstance.get("/customer/vehicles");
+
+      const responseAppoitment = await axiosInstance.get(
+        "/customer/appointments",
+      );
+      setAppoitmentList(responseAppoitment?.data?.entity || []);
+      setVehicles(responseVehicle?.data?.entity || []);
     } catch (error) {
       console.error("Error fetching vehicles", error);
       setVehicles([]);
+      setAppoitmentList([]);
     } finally {
       setLoading(false);
     }
   };
-
+  console.log("AppoitnmentList", AppoitnmentList);
   const handleDelete = async () => {
     if (!selectedVehId) return;
 
@@ -56,6 +59,14 @@ const AppointmentList = () => {
     }
   };
 
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  if (loading) {
+    return;
+  }
+  console.log("vehicles", vehicles);
   return (
     <div className="p-6">
       <div className="mx-auto max-w-6xl">
@@ -63,12 +74,16 @@ const AppointmentList = () => {
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-800">
             {" "}
-            Vehicles List
+            Appoitment List
           </h1>
 
           <VehicleButton
-            text="Add Vehicle"
-            onClick={() => navigate("/vehicles/add")}
+            text="Book Appoitment"
+            onClick={() =>
+              navigate("checkVehicles", {
+                state: { vehicles },
+              })
+            }
           />
         </div>
 

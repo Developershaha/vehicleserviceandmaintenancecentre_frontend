@@ -6,6 +6,7 @@ interface AuthState {
   username: string | null;
   userId: string | null;
   role: string | null;
+  userType: string | null;
 }
 
 const initialState: AuthState = {
@@ -14,6 +15,7 @@ const initialState: AuthState = {
   username: null,
   userId: null,
   role: null,
+  userType: null,
 };
 
 const authSlice = createSlice({
@@ -22,10 +24,15 @@ const authSlice = createSlice({
   reducers: {
     setAuthTokens: (
       state,
-      action: PayloadAction<{ jwt: string; refreshToken: string }>,
+      action: PayloadAction<{
+        jwt: string;
+        refreshToken: string;
+        userType: string;
+      }>,
     ) => {
       state.jwt = action.payload.jwt;
       state.refreshToken = action.payload.refreshToken;
+      state.userType = action.payload.userType;
     },
 
     setUserFromJwt: (

@@ -5,7 +5,7 @@ import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import dayjs from "dayjs";
 import { deleteVehicleApi } from "../hooks/useVehicle";
 import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 
 const VehicleList = () => {
@@ -15,15 +15,18 @@ const VehicleList = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
+  const { userType } = useAppSelector((state) => state.auth);
 
   const fetchVehicles = async () => {
+    let response;
+
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/customer/vehicles");
+      if (userType === "customer") {
+        response = await axiosInstance.get("/customer/vehicles");
+      } else if (userType === "admin") {
+        response = await axiosInstance.get("/admin/vehicles");
+      }
       setVehicles(response?.data?.entity || []);
     } catch (error) {
       console.error("Error fetching vehicles", error);
@@ -32,6 +35,10 @@ const VehicleList = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
 
   const handleDelete = async () => {
     if (!selectedVehId) return;

@@ -47,7 +47,7 @@ const Login = () => {
         const response = await loginApi(values);
         const cookies = new Cookies();
 
-        const { Jwt, RefreshToken } = response.data.entity ?? {};
+        const { Jwt, RefreshToken, userType } = response.data.entity ?? {};
 
         if (response?.data?.validationCode === "user.login.success") {
           const decoded = jwtDecode<JwtPayload>(Jwt);
@@ -70,6 +70,7 @@ const Login = () => {
             setAuthTokens({
               jwt: Jwt,
               refreshToken: RefreshToken,
+              userType,
             }),
           );
 

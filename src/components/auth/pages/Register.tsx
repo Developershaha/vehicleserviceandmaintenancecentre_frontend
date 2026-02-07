@@ -69,14 +69,17 @@ const Register = () => {
         .required("Confirm password required"),
     }),
     validate: () => {
-      return usernameError ? { username: usernameError } : {};
+      if (!usernameError) return {};
+      return {
+        username: usernameError,
+      };
     },
 
     onSubmit: async (values) => {
       try {
         const payload = {
           useUsername: values.username,
-          useTitle: values.gender,
+          useTitle: values.gender?.value,
           useFirstName: values.firstName,
           useSurname: values.lastName,
           useEmail: values.email,
@@ -111,7 +114,7 @@ const Register = () => {
   const debouncedUsername = useDebouncedValue(formik.values.username, 500);
   useEffect(() => {
     if (!debouncedUsername || debouncedUsername.length < 4) {
-      // setUsernameError(undefined);
+      setUsernameError(undefined);
       return;
     }
 
@@ -126,7 +129,7 @@ const Register = () => {
         formik.setFieldTouched("username", true, false); // ✅ REQUIRED
         formik.setFieldError("username", "Username already exists");
         setUsernameError("Username already exists");
-      } else {
+      } else if (res?.data?.validationCode === "user.not.found") {
         setUsernameError(undefined);
       }
     };
@@ -165,8 +168,12 @@ const Register = () => {
               name="username"
               required
               value={formik.values.username}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              onChange={(e) => {
+                formik.handleChange(e);
+              }}
+              onBlur={(e) => {
+                formik.handleBlur(e);
+              }}
               error={formik.errors.username}
               touched={formik.touched.username}
             />
