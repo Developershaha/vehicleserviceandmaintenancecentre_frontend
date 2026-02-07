@@ -52,7 +52,7 @@ const VehicleAutoSelectField = ({
   // Filter options
   const filteredOptions = useMemo(() => {
     return options.filter((opt) =>
-      opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
+      opt?.label.toLowerCase().includes(searchTerm?.toLowerCase()),
     );
   }, [options, searchTerm]);
 
