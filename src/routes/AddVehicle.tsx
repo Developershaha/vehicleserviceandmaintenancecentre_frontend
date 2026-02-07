@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import VehicleInput from "../components/common/VehicleInput";
 import VehicleButton from "../components/common/VehicleButton";
@@ -22,6 +22,9 @@ const currentYear: number = new Date().getFullYear();
 const AddVehicle = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { state } = useLocation();
+  const { redirect, vehicles } = state ?? {};
+  console.log("state", redirect, vehicles);
 
   const [vehicleNumberError, setVehicleNumberError] = useState<
     string | undefined
@@ -83,7 +86,11 @@ const AddVehicle = () => {
             type: "success",
           }),
         );
-        navigate("/vehicles");
+        if (redirect === "fromAppoitment") {
+          navigate("/appointments/checkVehicles", {
+            state: { vehicles },
+          });
+        } else navigate("/vehicles");
       }
     },
   });
@@ -138,7 +145,16 @@ const AddVehicle = () => {
     <>
       {/* Back */}
       <div className="mb-4 flex items-center">
-        <VehicleButton text="Back" onClick={() => navigate("/vehicles")} />
+        <VehicleButton
+          text="Back"
+          onClick={() => {
+            if (redirect === "fromAppoitment") {
+              navigate("/appointments/checkVehicles", {
+                state: { vehicles },
+              });
+            } else navigate("/vehicles");
+          }}
+        />
       </div>
 
       <div className="flex justify-center px-4 py-10">

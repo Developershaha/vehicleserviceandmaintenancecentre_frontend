@@ -35,7 +35,6 @@ const AppointmentList = () => {
       setLoading(false);
     }
   };
-  console.log("AppoitnmentList", AppoitnmentList);
   const handleDelete = async () => {
     if (!selectedVehId) return;
 
@@ -66,7 +65,6 @@ const AppointmentList = () => {
   if (loading) {
     return;
   }
-  console.log("vehicles", vehicles);
   return (
     <div className="p-6">
       <div className="mx-auto max-w-6xl">
