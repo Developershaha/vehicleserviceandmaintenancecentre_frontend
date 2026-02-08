@@ -16,7 +16,9 @@ const AppointmentList = () => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
+  const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
 
+  console.log("vehicles", vehicles);
   const fetchVehicles = async () => {
     try {
       setLoading(true);
@@ -35,26 +37,31 @@ const AppointmentList = () => {
       setLoading(false);
     }
   };
-  const handleDelete = async () => {
-    if (!selectedVehId) return;
+  const handleDeleteAppointment = async () => {
+    if (!selectedAptId) return;
 
     try {
-      const response = await deleteVehicleApi(selectedVehId);
-      if (response?.data?.validationCode === "vehicle.delete.success") {
+      const response = await axiosInstance.delete("/appointment", {
+        params: {
+          aptId: selectedAptId,
+        },
+      });
+      console.log("response", response?.data?.validationCode);
+
+      if (response?.data?.validationCode === "appointment.delete.success") {
         dispatch(
           showSnackbar({
-            message: "Vehicle deleted  successfully",
+            message: "Appoitment deleted  successfully",
             type: "success",
           }),
         );
 
         fetchVehicles();
       }
-    } catch (error) {
-      console.error("Error deleting vehicle", error);
-    } finally {
       setShowDeleteModal(false);
-      setSelectedVehId(null);
+      setSelectedAptId(null);
+    } catch (error) {
+      console.error("Delete appointment failed", error);
     }
   };
 
@@ -95,76 +102,76 @@ const AppointmentList = () => {
                     Vehicle Number
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Brand
+                    Appointment Date
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Model
+                    Problem
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Type
+                    Status
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Manufacture Year
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Added Date
+                    Created Date
                   </th>
                   <th className="px-3 py-2 text-center font-medium text-gray-600">
-                    Delete Vehicle
+                    Delete
                   </th>
                 </tr>
               </thead>
 
               <tbody>
-                {/* Loading */}
                 {loading && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={6}
                       className="px-4 py-6 text-center text-gray-500"
                     >
-                      Loading vehicles...
+                      Loading appointments...
                     </td>
                   </tr>
                 )}
 
-                {/* Data */}
                 {!loading &&
-                  vehicles.map((vehicle) => (
+                  AppoitnmentList.map((apt) => (
                     <tr
-                      key={vehicle.vehId}
+                      key={apt.aptId}
                       className="border-b last:border-b-0 hover:bg-gray-50 transition"
                     >
                       <td className="px-3 py-2 font-medium text-gray-800">
-                        {vehicle.vehVehicleNumber}
+                        {vehicles?.find((v) => v?.vehId === apt?.aptVehId)
+                          ?.vehVehicleNumber ?? "N/A"}
                       </td>
+
                       <td className="px-3 py-2 text-gray-700">
-                        {vehicle.vehBrand}
+                        {dayjs(apt.aptDate).format("DD/MM/YYYY")}
                       </td>
+
                       <td className="px-3 py-2 text-gray-700">
-                        {vehicle.vehModel}
+                        {apt.aptProblemDescription}
                       </td>
-                      <td className="px-3 py-2 capitalize text-gray-700">
-                        {vehicle.vehVehicleType}
+
+                      <td className="px-3 py-2">
+                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                          {apt.aptStatus}
+                        </span>
                       </td>
-                      <td className="px-3 py-2 text-gray-700">
-                        {vehicle.vehManufacturingYear}
-                      </td>
+
                       <td className="px-3 py-2 text-gray-600">
-                        {dayjs(vehicle?.vehCreated).format("DD/MM/YYYY")}
+                        {dayjs(apt.aptCreated).format("DD/MM/YYYY")}
                       </td>
+
+                      {/* DELETE */}
                       <td className="px-3 py-2 text-center">
                         <button
                           onClick={() => {
-                            setSelectedVehId(vehicle.vehId);
+                            setSelectedAptId(apt.aptId);
                             setShowDeleteModal(true);
                           }}
                           className="rounded-md bg-red-50 px-5 py-1.5
-               text-sm font-medium text-red-600
-               border border-red-200
-               hover:bg-red-100 hover:border-red-300
-               active:scale-95 transition-all duration-150"
-                          title="Delete"
+                             text-sm font-medium text-red-600
+                             border border-red-200
+                             hover:bg-red-100 hover:border-red-300
+                             active:scale-95 transition-all"
                         >
                           Delete
                         </button>
@@ -172,14 +179,13 @@ const AppointmentList = () => {
                     </tr>
                   ))}
 
-                {/* Empty state */}
-                {!loading && vehicles.length === 0 && (
+                {!loading && AppoitnmentList.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={6}
                       className="px-4 py-6 text-center text-gray-500"
                     >
-                      No vehicles found
+                      No appointments found
                     </td>
                   </tr>
                 )}
@@ -192,9 +198,9 @@ const AppointmentList = () => {
         open={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
-          setSelectedVehId(null);
+          setSelectedAptId(null);
         }}
-        onConfirm={handleDelete}
+        onConfirm={handleDeleteAppointment}
       />
     </div>
   );

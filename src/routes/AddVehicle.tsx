@@ -172,7 +172,12 @@ const AddVehicle = () => {
               label="Vehicle Number"
               name="vehVehicleNumber"
               value={formik.values.vehVehicleNumber}
-              onChange={formik.handleChange}
+              onChange={(e) => {
+                formik.setFieldValue(
+                  "vehVehicleNumber",
+                  e.target.value.toUpperCase(),
+                );
+              }}
               onBlur={formik.handleBlur}
               error={formik.errors.vehVehicleNumber}
               touched={formik.touched.vehVehicleNumber}

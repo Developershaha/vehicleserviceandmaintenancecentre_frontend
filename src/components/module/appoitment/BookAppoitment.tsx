@@ -54,8 +54,6 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      console.log("values", values);
-
       try {
         await axiosInstance.post("/customer/appointments", null, {
           params: { ...values, aptVehId: values?.aptVehId?.value }, // ⚠️ API expects QUERY params
@@ -64,7 +62,7 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
         navigate("/appointments");
         dispatch(
           showSnackbar({
-            message: "Vehicle deleted  successfully",
+            message: "Appoitment Book successfully",
             type: "success",
           }),
         );
