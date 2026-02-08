@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import VehicleButton from "../../common/VehicleButton";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import dayjs from "dayjs";
-import { deleteVehicleApi } from "../hooks/useVehicle";
 import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 
 const AppointmentList = () => {
@@ -15,19 +14,31 @@ const AppointmentList = () => {
   const [AppoitnmentList, setAppoitmentList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
   const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
-
-  console.log("vehicles", vehicles);
+  const { userType } = useAppSelector((state) => state.auth);
   const fetchVehicles = async () => {
+    let responseVehicle;
+    let responseAppoitment;
+    let responseMechanical;
+    let responseAdmin;
     try {
       setLoading(true);
-      const responseVehicle = await axiosInstance.get("/customer/vehicles");
+      if (userType === "customer") {
+        responseVehicle = await axiosInstance.get("/customer/vehicles");
 
-      const responseAppoitment = await axiosInstance.get(
-        "/customer/appointments",
+        responseAppoitment = await axiosInstance.get("/customer/appointments");
+      } else if (userType === "mechanic") {
+        responseMechanical = await axiosInstance.get("/mechanic/appointments");
+      } else if (userType === "admin") {
+        responseAdmin = await axiosInstance.get("/admin/appointments/list");
+      }
+
+      setAppoitmentList(
+        responseAppoitment?.data?.entity ||
+          responseMechanical?.data?.entity ||
+          responseAdmin?.data?.entity ||
+          [],
       );
-      setAppoitmentList(responseAppoitment?.data?.entity || []);
       setVehicles(responseVehicle?.data?.entity || []);
     } catch (error) {
       console.error("Error fetching vehicles", error);
