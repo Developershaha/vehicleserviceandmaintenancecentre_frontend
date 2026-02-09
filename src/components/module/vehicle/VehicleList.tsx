@@ -88,6 +88,9 @@ const VehicleList = () => {
                     Vehicle Number
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
+                    Customer Name
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Brand
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
@@ -130,6 +133,9 @@ const VehicleList = () => {
                     >
                       <td className="px-3 py-2 font-medium text-gray-800">
                         {vehicle.vehVehicleNumber}
+                      </td>
+                      <td className="px-3 py-2 font-medium text-gray-800">
+                        {vehicle.userFullName}
                       </td>
                       <td className="px-3 py-2 text-gray-700">
                         {vehicle.vehBrand}

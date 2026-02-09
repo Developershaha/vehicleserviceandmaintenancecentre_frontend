@@ -15,7 +15,7 @@ interface BookAppoitmentProps {
 }
 
 const validationSchema = Yup.object({
-  aptVehId: Yup.mixed().required("Vehicle type required"),
+  aptVehId: Yup.mixed().required("Appointment vehicle Number required"),
   aptDate: Yup.string()
     .required("Appointment date required")
     .matches(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be dd/mm/yyyy")
@@ -76,7 +76,7 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
     <div>
       <form onSubmit={formik.handleSubmit} className="space-y-5">
         <VehicleAutoSelectField
-          label="Appoitment vehicle Number"
+          label="Appointment vehicle Number"
           name="aptVehId"
           value={formik.values.aptVehId}
           options={vehicleOptions ?? []}
