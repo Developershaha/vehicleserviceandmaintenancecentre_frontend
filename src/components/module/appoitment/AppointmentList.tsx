@@ -203,7 +203,7 @@ const AppointmentList = () => {
                           </a>
                         </td>
                       </td>
-                      <td className="px-3 py-2 text-gray-600">
+                      <td className="px-3 py-2 text-gray-600 text-center">
                         {apt?.aptMechanic || "-"}
                       </td>
                       <td className="px-3 py-2">
