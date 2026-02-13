@@ -7,7 +7,6 @@ const AppoitmentBookOrVehicle = () => {
     state: { vehicles },
   } = useLocation();
   const navigate = useNavigate();
-  console.log("state", vehicles);
   return (
     <>
       {vehicles.length === 0 ? (

@@ -102,7 +102,6 @@ const AppointmentList = () => {
     return;
   }
 
-  console.log("showAssignRejectModal", showAssignRejectModal);
   const linkVariable =
     "text-blue-600 text-sm font-medium hover:underline hover:text-blue-800 transition-colors";
 
@@ -197,45 +196,47 @@ const AppointmentList = () => {
                       <td className="px-3 py-2 text-gray-700">
                         {apt.aptProblemDescription}
                       </td>
-                      <td className="px-3 py-2">
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          {apt.aptStatus}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2">
-                        <td className="px-3 py-2 text-center">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedAptId(apt.aptId);
-                              setShowDeleteModal(true);
-                            }}
-                            className={linkVariable}
-                          >
-                            Link
-                          </a>
-                        </td>
-                      </td>
-                      <td className="px-3 py-2 text-gray-600 text-center">
-                        {apt?.aptMechanic || "-"}
-                      </td>
-                      <td className="px-3 py-2">
-                        <td className="px-3 py-2 text-center">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedAptId(apt.aptId);
-                              setShowAssignRejectModal(true);
-                            }}
-                            className={linkVariable}
-                          >
-                            Assign
-                          </a>
-                        </td>
-                      </td>
-
+                      {userType === "admin" && (
+                        <>
+                          <td className="px-3 py-2">
+                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                              {apt.aptStatus}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2">
+                            <td className="px-3 py-2 text-center">
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setSelectedAptId(apt.aptId);
+                                  setShowAssignRejectModal(true);
+                                }}
+                                className={linkVariable}
+                              >
+                                Link
+                              </a>
+                            </td>
+                          </td>
+                          <td className="px-3 py-2 text-gray-600 text-center">
+                            {apt?.aptMechanic || "-"}
+                          </td>
+                          <td className="px-3 py-2">
+                            <td className="px-3 py-2 text-center">
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setSelectedAptId(apt.aptId);
+                                }}
+                                className={linkVariable}
+                              >
+                                Assign
+                              </a>
+                            </td>
+                          </td>
+                        </>
+                      )}
                       <td className="px-3 py-2 text-gray-600">
                         {dayjs(apt.aptCreated).format("DD/MM/YYYY")}
                       </td>
@@ -274,14 +275,14 @@ const AppointmentList = () => {
           </div>
         </div>
       </div>
-      {/* <ConfirmDeleteModal
+      <ConfirmDeleteModal
         open={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
           setSelectedAptId(null);
         }}
         onConfirm={handleDeleteAppointment}
-      /> */}
+      />
       <ConfirmAssignRejectModal
         open={showAssignRejectModal}
         onClose={() => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import VehicleAutoSelectField from "./VehicleAutoSelectField";
 import { useFormik } from "formik";
+import VehicleAutoSelectField from "./VehicleAutoSelectField";
 
 type ConfirmAssignRejectModalProps = {
   open: boolean;
@@ -8,39 +8,41 @@ type ConfirmAssignRejectModalProps = {
   onConfirm: (action: "assign" | "reject") => void;
 };
 
+const ASSIGN_REJECT_OPTIONS = [
+  {
+    label: "Assign",
+    value: "assign",
+  },
+  {
+    label: "Reject",
+    value: "reject",
+  },
+];
+
 const ConfirmAssignRejectModal = ({
   open,
   onClose,
   onConfirm,
 }: ConfirmAssignRejectModalProps) => {
   const [action, setAction] = useState<"assign" | "reject">("assign");
-  const [vehicleType, setVehicleType] = useState<any>(null);
+
   const formik = useFormik({
     initialValues: {
-      vehVehicleType: null,
+      vehVehicleType: null as any,
     },
-    onSubmit: (values) => {
-      console.log(values);
-    },
+    onSubmit: () => {},
   });
 
   if (!open) return null;
-  const ASSIGN_REJECT_OPTIONS = [
-    {
-      label: "Assign",
-      value: "assign",
-    },
-    {
-      label: "Reject",
-      value: "reject",
-    },
-  ];
+
+  const isConfirmDisabled = !formik.values.vehVehicleType;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+      {/* Modal container */}
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-xl">
         <h2 className="text-lg font-semibold text-gray-800">
-          Assign / Reject Appointment
+          Approve/Reject Appointment
         </h2>
 
         <p className="mt-2 text-sm text-gray-600">
@@ -48,27 +50,29 @@ const ConfirmAssignRejectModal = ({
         </p>
 
         {/* Dropdown */}
-        <VehicleAutoSelectField
-          label="Vehicle Type"
-          name="vehVehicleType"
-          value={formik?.values?.vehVehicleType}
-          options={ASSIGN_REJECT_OPTIONS}
-          onChange={(val) => {
-            formik.setFieldValue("vehVehicleType", val);
-          }}
-          onBlur={formik.handleBlur}
-          clearable
-          required
-          error={
-            formik.touched.vehVehicleType
-              ? (formik.errors.vehVehicleType as string)
-              : undefined
-          }
-          touched={formik.touched.vehVehicleType}
-        />
+        <div className="mt-5">
+          <VehicleAutoSelectField
+            label="Action"
+            name="vehVehicleType"
+            value={formik.values.vehVehicleType}
+            options={ASSIGN_REJECT_OPTIONS}
+            onChange={(val) => {
+              formik.setFieldValue("vehVehicleType", val);
+              setAction(val?.value);
+            }}
+            onBlur={formik.handleBlur}
+            clearable
+            required
+            error={
+              formik.touched.vehVehicleType
+                ? (formik.errors.vehVehicleType as string)
+                : undefined
+            }
+          />
+        </div>
 
         {/* Buttons */}
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={onClose}
             className="rounded-md border border-gray-300 px-4 py-1.5
@@ -78,12 +82,15 @@ const ConfirmAssignRejectModal = ({
           </button>
 
           <button
+            disabled={isConfirmDisabled}
             onClick={() => onConfirm(action)}
             className={`rounded-md px-4 py-1.5 text-sm font-medium text-white
               ${
-                action === "reject"
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
+                isConfirmDisabled
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : action === "reject"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
               }
               active:scale-95 transition`}
           >
