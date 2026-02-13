@@ -21,13 +21,22 @@ const ConfirmAssignRejectModal = ({
   appointmentData,
 }: ConfirmAssignRejectModalProps) => {
   // ✅ derive default option from appointment status
-  const defaultOption =
-    appointmentData?.aptStatus === "APPROVED"
-      ? ASSIGN_REJECT_OPTIONS[0] // Assign
-      : ASSIGN_REJECT_OPTIONS[1]; // Reject
+  const getDefaultOption = (status?: string) => {
+    switch (status) {
+      case "APPROVED":
+        return ASSIGN_REJECT_OPTIONS[0]; // Assign
+      case "REJECTED":
+        return ASSIGN_REJECT_OPTIONS[1]; // Reject
+      case "PENDING":
+      default:
+        return null; // Assign (default)
+    }
+  };
+
+  const defaultOption = getDefaultOption(appointmentData?.aptStatus);
 
   const [action, setAction] = useState<"assign" | "reject">(
-    defaultOption.value,
+    defaultOption?.value,
   );
 
   const formik = useFormik({

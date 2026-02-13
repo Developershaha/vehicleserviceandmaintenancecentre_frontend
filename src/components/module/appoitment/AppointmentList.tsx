@@ -7,12 +7,13 @@ import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
-import Assign from "../../common/Assign";
+import AssignMechanicModal from "../../common/AssignMechanicModal";
 
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [AppoitnmentList, setAppoitmentList] = useState<any[]>([]);
+  const [jobCardCreatedId, setJobCardCreatedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
@@ -72,6 +73,30 @@ const AppointmentList = () => {
       setSelectedAptId(null);
     } catch (error) {
       console.error("Delete appointment failed", error);
+    }
+  };
+
+  const handleMechanicAssign = async (mechanicName: string) => {
+    const response = await axiosInstance.put(
+      "/admin/appointments/assign",
+      null,
+      {
+        params: {
+          aptId: selectedAptId,
+          username: mechanicName,
+        },
+      },
+    );
+    if (response?.data?.validationCode === "mechanic.assigned.success") {
+      dispatch(
+        showSnackbar({
+          message: "Appoitment Reject successfully",
+          type: "success",
+        }),
+      );
+      setShowAssign(false);
+      setSelectedAptId(null);
+      fetchVehicles();
     }
   };
   const fetchVehicles = async () => {
@@ -179,6 +204,9 @@ const AppointmentList = () => {
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Status
                   </th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-600">
+                    Created Date
+                  </th>
                   {userType === "admin" && (
                     <>
                       <th className="px-3 py-2 text-left font-medium text-gray-600">
@@ -192,8 +220,9 @@ const AppointmentList = () => {
                       </th>
                     </>
                   )}
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Created Date
+
+                  <th className="px-3 py-2 text-center font-medium text-gray-600">
+                    Create Job Card
                   </th>
                   <th className="px-3 py-2 text-center font-medium text-gray-600">
                     Delete
@@ -215,87 +244,129 @@ const AppointmentList = () => {
 
                 {!loading &&
                   AppoitnmentList?.length > 0 &&
-                  AppoitnmentList?.map((appoitmemt) => (
-                    <tr
-                      key={appoitmemt?.aptId}
-                      className="border-b last:border-b-0 hover:bg-gray-50 transition"
-                    >
-                      <td className="px-3 py-2 font-medium text-gray-800">
-                        {appoitmemt?.vehVehicleNumber ?? "N/A"}
-                      </td>
-
-                      <td className="px-3 py-2 text-gray-700">
-                        {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
-                      </td>
-
-                      <td className="px-3 py-2 text-gray-700">
-                        {appoitmemt?.aptProblemDescription}
-                      </td>
-                      <td className="px-3 py-2">
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          {appoitmemt?.aptStatus}
-                        </span>
-                      </td>
-                      {userType === "admin" && (
-                        <>
-                          <td className="px-3 py-2">
-                            <td className="px-3 py-2 text-center">
-                              <a
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setAppointmentData(appoitmemt);
-                                  setSelectedAptId(appoitmemt?.aptId);
-                                  setShowAssignRejectModal(true);
-                                }}
-                                className={linkVariable}
-                              >
-                                Link
-                              </a>
-                            </td>
+                  AppoitnmentList?.map((appoitmemt) => {
+                    const isDisabled = Boolean(appoitmemt?.aptMechanic);
+                    return (
+                      <>
+                        {" "}
+                        <tr
+                          key={appoitmemt?.aptId}
+                          className="border-b last:border-b-0 hover:bg-gray-50 transition"
+                        >
+                          <td className="px-3 py-2 font-medium text-gray-800">
+                            {appoitmemt?.vehVehicleNumber ?? "N/A"}
                           </td>
-                          <td className="px-3 py-2 text-gray-600 text-center">
-                            {appoitmemt?.aptMechanic || "-"}
+
+                          <td className="px-3 py-2 text-gray-700">
+                            {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
+                          </td>
+
+                          <td className="px-3 py-2 text-gray-700">
+                            {appoitmemt?.aptProblemDescription}
                           </td>
                           <td className="px-3 py-2">
-                            <td className="px-3 py-2 text-center">
-                              <a
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setShowAssign(true);
-                                  setSelectedAptId(appoitmemt?.aptId);
-                                }}
-                                className={linkVariable}
-                              >
-                                Assign
-                              </a>
-                            </td>
+                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                              {appoitmemt?.aptStatus}
+                            </span>
                           </td>
-                        </>
-                      )}
-                      <td className="px-3 py-2 text-gray-600">
-                        {dayjs(appoitmemt?.aptCreated).format("DD/MM/YYYY")}
-                      </td>
+                          <td className="px-3 py-2 text-gray-600">
+                            {dayjs(appoitmemt?.aptCreated).format("DD/MM/YYYY")}
+                          </td>
+                          {userType === "admin" && (
+                            <>
+                              <td className="px-3 py-2">
+                                <td className="px-3 py-2 text-center">
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      if (isDisabled) return; // ✅ block click
 
-                      {/* DELETE */}
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => {
-                            setSelectedAptId(appoitmemt?.aptId);
-                            setShowDeleteModal(true);
-                          }}
-                          className="rounded-md bg-red-50 px-5 py-1.5
+                                      setAppointmentData(appoitmemt);
+                                      setSelectedAptId(appoitmemt?.aptId);
+                                      setShowAssignRejectModal(true);
+                                    }}
+                                    className={`${linkVariable} ${
+                                      isDisabled
+                                        ? "pointer-events-none cursor-not-allowed text-gray-400 no-underline"
+                                        : ""
+                                    }`}
+                                    aria-disabled={isDisabled}
+                                    title={
+                                      isDisabled
+                                        ? "Mechanic already assigned"
+                                        : "Assign / Reject"
+                                    }
+                                  >
+                                    Link
+                                  </a>
+                                </td>
+                              </td>
+                              <td className="px-3 py-2 text-gray-600 text-center">
+                                {appoitmemt?.aptMechanic
+                                  ? `${appoitmemt?.mechanicTitle} ${appoitmemt?.mechanicFirstName} ${appoitmemt?.mechanicSurname}`
+                                  : "-"}
+                              </td>
+                              <td className="px-3 py-2">
+                                <td className="px-3 py-2 text-center">
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowAssign(true);
+                                      setSelectedAptId(appoitmemt?.aptId);
+                                    }}
+                                    className={`${linkVariable} ${
+                                      isDisabled
+                                        ? "pointer-events-none cursor-not-allowed text-gray-400 no-underline"
+                                        : ""
+                                    }`}
+                                    aria-disabled={isDisabled}
+                                  >
+                                    Assign
+                                  </a>
+                                </td>
+                              </td>
+                            </>
+                          )}
+                          {/* jon card button  */}
+                          <td className="px-3 py-2 text-center whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                setSelectedAptId(appoitmemt?.aptId);
+                                setShowDeleteModal(true);
+                              }}
+                              className="inline-flex w-28 items-center justify-center
+               rounded-md bg-blue-50 px-4 py-1.5
+               text-sm font-medium text-blue-600
+               border border-blue-200
+               hover:bg-blue-100 hover:border-blue-300
+               active:scale-95 transition-all"
+                            >
+                              Job Card
+                            </button>
+                          </td>
+
+                          {/* DELETE */}
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              onClick={() => {
+                                setSelectedAptId(appoitmemt?.aptId);
+                                setShowDeleteModal(true);
+                              }}
+                              className="rounded-md bg-red-50 px-5 py-1.5
                              text-sm font-medium text-red-600
                              border border-red-200
                              hover:bg-red-100 hover:border-red-300
                              active:scale-95 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      </>
+                    );
+                  })}
 
                 {!loading && AppoitnmentList?.length === 0 && (
                   <tr>
@@ -330,13 +401,12 @@ const AppointmentList = () => {
         onConfirm={handleAssignReject}
       />
       {showAssign && (
-        <Assign
+        <AssignMechanicModal
           onClose={() => {
             setShowAssign(false);
             setSelectedAptId(null);
           }}
-          appointmentData={appointmentData}
-          onConfirm={handleAssignReject}
+          onConfirm={handleMechanicAssign}
         />
       )}
     </div>

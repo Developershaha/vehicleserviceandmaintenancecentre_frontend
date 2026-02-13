@@ -26,7 +26,12 @@ const VehicleList = () => {
       } else if (userType === "admin") {
         response = await axiosInstance.get("/admin/vehicles");
       }
-      setVehicles(response?.data?.entity || []);
+
+      if (userType === "admin") {
+        setVehicles(response?.data?.entity?.finalVehicleList || []);
+      } else {
+        setVehicles(response?.data?.entity || []);
+      }
     } catch (error) {
       console.error("Error fetching vehicles", error);
       setVehicles([]);
@@ -61,6 +66,8 @@ const VehicleList = () => {
       setSelectedVehId(null);
     }
   };
+
+  console.log("vehicles", vehicles);
 
   return (
     <div className="p-6">
@@ -126,19 +133,20 @@ const VehicleList = () => {
 
                 {/* Data */}
                 {!loading &&
-                  vehicles.map((vehicle) => (
+                  vehicles?.length > 0 &&
+                  vehicles?.map((vehicle) => (
                     <tr
-                      key={vehicle.vehId}
+                      key={vehicle?.vehId}
                       className="border-b last:border-b-0 hover:bg-gray-50 transition"
                     >
                       <td className="px-3 py-2 font-medium text-gray-800">
-                        {vehicle.vehVehicleNumber}
+                        {vehicle?.vehVehicleNumber}
                       </td>
                       <td className="px-3 py-2 font-medium text-gray-800">
-                        {vehicle.userFullName}
+                        {vehicle?.userFullName}
                       </td>
                       <td className="px-3 py-2 text-gray-700">
-                        {vehicle.vehBrand}
+                        {vehicle?.vehBrand}
                       </td>
                       <td className="px-3 py-2 text-gray-700">
                         {vehicle.vehModel}
