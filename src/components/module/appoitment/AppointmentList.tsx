@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
+import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
 
 const AppointmentList = () => {
   const navigate = useNavigate();
@@ -16,6 +17,18 @@ const AppointmentList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
   const { userType } = useAppSelector((state) => state.auth);
+  const [showAssignRejectModal, setShowAssignRejectModal] = useState(false);
+
+  const handleAssignReject = (action: "assign" | "reject") => {
+    if (action === "assign") {
+      // handleAssignAppointment(selectedAptId);
+    } else {
+      // handleRejectAppointment(selectedAptId);
+    }
+
+    setShowAssignRejectModal(false);
+    setSelectedAptId(null);
+  };
   const fetchVehicles = async () => {
     let responseVehicle;
     let responseAppoitment;
@@ -89,6 +102,7 @@ const AppointmentList = () => {
     return;
   }
 
+  console.log("showAssignRejectModal", showAssignRejectModal);
   const linkVariable =
     "text-blue-600 text-sm font-medium hover:underline hover:text-blue-800 transition-colors";
 
@@ -213,7 +227,7 @@ const AppointmentList = () => {
                             onClick={(e) => {
                               e.preventDefault();
                               setSelectedAptId(apt.aptId);
-                              setShowDeleteModal(true);
+                              setShowAssignRejectModal(true);
                             }}
                             className={linkVariable}
                           >
@@ -260,13 +274,21 @@ const AppointmentList = () => {
           </div>
         </div>
       </div>
-      <ConfirmDeleteModal
+      {/* <ConfirmDeleteModal
         open={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
           setSelectedAptId(null);
         }}
         onConfirm={handleDeleteAppointment}
+      /> */}
+      <ConfirmAssignRejectModal
+        open={showAssignRejectModal}
+        onClose={() => {
+          setShowAssignRejectModal(false);
+          setSelectedAptId(null);
+        }}
+        onConfirm={handleAssignReject}
       />
     </div>
   );
