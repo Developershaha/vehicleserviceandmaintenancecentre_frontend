@@ -17,6 +17,7 @@ const AppointmentList = () => {
   const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
   const { userType } = useAppSelector((state) => state.auth);
   const [showAssignRejectModal, setShowAssignRejectModal] = useState(false);
+  const [appointmentData, setAppointmentData] = useState({});
 
   const handleAssignReject = async (action: "assign" | "reject") => {
     if (!selectedAptId) return;
@@ -241,6 +242,7 @@ const AppointmentList = () => {
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
+                                  setAppointmentData(appoitmemt);
                                   setSelectedAptId(appoitmemt?.aptId);
                                   setShowAssignRejectModal(true);
                                 }}
@@ -321,6 +323,7 @@ const AppointmentList = () => {
           setShowAssignRejectModal(false);
           setSelectedAptId(null);
         }}
+        appointmentData={appointmentData}
         onConfirm={handleAssignReject}
       />
     </div>

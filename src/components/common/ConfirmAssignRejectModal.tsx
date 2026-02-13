@@ -6,6 +6,7 @@ type ConfirmAssignRejectModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: (action: "assign" | "reject") => void;
+  appointmentData: any;
 };
 
 const ASSIGN_REJECT_OPTIONS = [
@@ -23,18 +24,35 @@ const ConfirmAssignRejectModal = ({
   open,
   onClose,
   onConfirm,
+  appointmentData,
 }: ConfirmAssignRejectModalProps) => {
   const [action, setAction] = useState<"assign" | "reject">("assign");
-
+  const approvedData =
+    appointmentData?.aptStatus === "APPROVED"
+      ? ASSIGN_REJECT_OPTIONS?.[0]
+      : null;
+  const rejectData =
+    appointmentData?.aptStatus === "APPROVED"
+      ? ASSIGN_REJECT_OPTIONS?.[0]
+      : null;
   const formik = useFormik({
     initialValues: {
-      vehVehicleType: null as any,
+      vehVehicleType: ASSIGN_REJECT_OPTIONS?.[0],
     },
     onSubmit: () => {},
   });
 
   if (!open) return null;
-
+  console.log(
+    "first",
+    appointmentData?.aptStatus === "APPROVED"
+      ? ASSIGN_REJECT_OPTIONS?.[0]
+      : null,
+  );
+  console.log(
+    "appointmentData",
+    appointmentData?.aptStatus === "APPROVED" ? ASSIGN_REJECT_OPTIONS?.[0] : "",
+  );
   const isConfirmDisabled = !formik.values.vehVehicleType;
 
   return (

@@ -6,7 +6,6 @@ import VehicleInput from "../components/common/VehicleInput";
 import VehicleButton from "../components/common/VehicleButton";
 import {
   addVehicleApi,
-  checkVehicleNumberDuplicateApi,
   type AddVehiclePayload,
 } from "../components/module/hooks/useVehicle";
 import type { AddVehicleFormValues } from "../components/module/types/vehicle";
@@ -14,8 +13,6 @@ import VehicleAutoSelectField from "../components/common/VehicleAutoSelectField"
 import { VEHICLE_TYPE_OPTIONS } from "../components/common/common";
 import { useAppDispatch } from "../store/hook";
 import { showSnackbar } from "../store/snackbarSlice";
-import { useDebouncedValue } from "../components/module/hooks/useDebouncedValue";
-import { useEffect, useState } from "react";
 
 const currentYear: number = new Date().getFullYear();
 
@@ -25,9 +22,6 @@ const AddVehicle = () => {
   const { state } = useLocation();
   const { redirect, vehicles } = state ?? {};
 
-  const [vehicleNumberError, setVehicleNumberError] = useState<
-    string | undefined
-  >(undefined);
   const formik = useFormik<AddVehicleFormValues>({
     initialValues: {
       vehVehicleNumber: "",
@@ -64,9 +58,6 @@ const AddVehicle = () => {
           },
         ),
     }),
-    validate: () => {
-      return vehicleNumberError ? { vehVehicleNumber: vehicleNumberError } : {};
-    },
 
     onSubmit: async (values) => {
       const payload: AddVehiclePayload = {
@@ -79,66 +70,28 @@ const AddVehicle = () => {
 
       const response = await addVehicleApi(payload);
       if (response?.data?.validationCode === "vehicle.add.success") {
-        dispatch(
-          showSnackbar({
-            message: "Vehicle added  successfully",
-            type: "success",
-          }),
-        );
         if (redirect === "fromAppoitment") {
+          dispatch(
+            showSnackbar({
+              message: "Vehicle added  successfully Now you can book appointment",
+              type: "success",
+            }),
+          );
           navigate("/appointments/checkVehicles", {
             state: { vehicles },
           });
-        } else navigate("/vehicles");
+        } else {
+          dispatch(
+            showSnackbar({
+              message: "Vehicle added  successfully",
+              type: "success",
+            }),
+          );
+          navigate("/vehicles");
+        }
       }
     },
   });
-  /* -------------------- Debounced Username Check -------------------- */
-  const debouncedVehicleNumber = useDebouncedValue(
-    formik.values.vehVehicleNumber,
-    500,
-  );
-
-  useEffect(() => {
-    if (!debouncedVehicleNumber || debouncedVehicleNumber.length < 7) {
-      if (vehicleNumberError !== undefined) {
-        setVehicleNumberError(undefined);
-      }
-      return;
-    }
-
-    let cancelled = false;
-
-    const checkDuplicate = async () => {
-      try {
-        const response = await checkVehicleNumberDuplicateApi(
-          debouncedVehicleNumber,
-        );
-
-        if (cancelled) return;
-
-        if (response?.data?.validationCode === "vehicle.already.registered") {
-          if (vehicleNumberError !== "Vehicle number already registered") {
-            setVehicleNumberError("Vehicle number already registered");
-          }
-        } else {
-          if (vehicleNumberError !== undefined) {
-            setVehicleNumberError(undefined);
-          }
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Vehicle duplicate check failed", error);
-        }
-      }
-    };
-
-    checkDuplicate();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedVehicleNumber]);
 
   return (
     <>
@@ -148,7 +101,7 @@ const AddVehicle = () => {
           text="Back"
           onClick={() => {
             if (redirect === "fromAppoitment") {
-              navigate("/appointments/checkVehicles", {
+              navigate("/appointments", {
                 state: { vehicles },
               });
             } else navigate("/vehicles");

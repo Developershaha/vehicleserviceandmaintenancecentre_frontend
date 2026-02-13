@@ -5,13 +5,14 @@ import BASE_URL from "../../constant";
 
 export interface AddVehiclePayload {
   vehVehicleNumber: string;
-  vehVehicleType: AutoSelectOption | null; // ✅ object
+  vehVehicleType: AutoSelectOption | null;
   vehBrand: string;
   vehModel: string;
   vehManufacturingYear: number;
 }
 
 export const addVehicleApi = (payload: AddVehiclePayload) => {
+  console.log("payload", payload);
   return axiosInstance.post("customer/vehicles", payload);
 };
 
