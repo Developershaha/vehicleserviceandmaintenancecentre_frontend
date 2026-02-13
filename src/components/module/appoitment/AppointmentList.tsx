@@ -19,15 +19,60 @@ const AppointmentList = () => {
   const { userType } = useAppSelector((state) => state.auth);
   const [showAssignRejectModal, setShowAssignRejectModal] = useState(false);
 
-  const handleAssignReject = (action: "assign" | "reject") => {
-    if (action === "assign") {
-      // handleAssignAppointment(selectedAptId);
-    } else {
-      // handleRejectAppointment(selectedAptId);
-    }
+  const handleAssignReject = async (action: "assign" | "reject") => {
+    if (!selectedAptId) return;
+    let response: any;
+    try {
+      if (action === "assign") {
+        response = await axiosInstance.put(
+          "/customer/appointments/approve",
+          null,
+          {
+            params: {
+              aptId: selectedAptId,
+            },
+          },
+        );
 
-    setShowAssignRejectModal(false);
-    setSelectedAptId(null);
+        console.log("assign", response?.data?.validationCode);
+      } else {
+        response = await axiosInstance.put(
+          "/customer/appointments/reject",
+          null,
+          {
+            params: {
+              aptId: selectedAptId,
+            },
+          },
+        );
+      }
+
+      if (response?.data?.validationCode === "appointment.approved") {
+        dispatch(
+          showSnackbar({
+            message: "Appoitment Approved successfully",
+            type: "success",
+          }),
+        );
+
+        fetchVehicles();
+      }
+      if (response?.data?.validationCode === "appointment.rejected") {
+        dispatch(
+          showSnackbar({
+            message: "Appoitment Reject successfully",
+            type: "success",
+          }),
+        );
+
+        fetchVehicles();
+      }
+
+      setShowAssignRejectModal(false);
+      setSelectedAptId(null);
+    } catch (error) {
+      console.error("Delete appointment failed", error);
+    }
   };
   const fetchVehicles = async () => {
     let responseVehicle;
@@ -47,10 +92,6 @@ const AppointmentList = () => {
         responseVehicle = await axiosInstance.get("/admin/vehicles");
       }
 
-      console.log(
-        "responseAdmin?.data?.entity?.appointmentList",
-        responseAdmin?.data?.entity?.appointmentList,
-      );
       setAppoitmentList(
         responseAppoitment?.data?.entity ||
           responseMechanical?.data?.entity ||

@@ -83,7 +83,10 @@ const ConfirmAssignRejectModal = ({
 
           <button
             disabled={isConfirmDisabled}
-            onClick={() => onConfirm(action)}
+            onClick={() => {
+              onConfirm(action);
+              formik?.resetForm();
+            }}
             className={`rounded-md px-4 py-1.5 text-sm font-medium text-white
               ${
                 isConfirmDisabled
