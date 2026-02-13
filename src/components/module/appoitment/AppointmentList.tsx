@@ -334,16 +334,25 @@ const AppointmentList = () => {
                             <button
                               onClick={() => {
                                 setSelectedAptId(appoitmemt?.aptId);
-                                setShowDeleteModal(true);
+
+                                // ✅ mark this row as clicked
+                                setJobCardCreatedId(appoitmemt?.aptId);
                               }}
-                              className="inline-flex w-28 items-center justify-center
-               rounded-md bg-blue-50 px-4 py-1.5
-               text-sm font-medium text-blue-600
-               border border-blue-200
-               hover:bg-blue-100 hover:border-blue-300
-               active:scale-95 transition-all"
+                              className={`inline-flex w-28 items-center justify-center gap-2 rounded-md px-4 py-1.5 text-sm font-medium border transition-all
+      ${
+        jobCardCreatedId === appoitmemt?.aptId
+          ? "bg-blue-100 text-blue-700 border-blue-300"
+          : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
+      }
+      active:scale-95`}
                             >
                               Job Card
+                              {/* ✅ Tick icon after click */}
+                              {jobCardCreatedId === appoitmemt?.aptId && (
+                                <span className="text-blue-700 font-bold">
+                                  ✔
+                                </span>
+                              )}
                             </button>
                           </td>
 
