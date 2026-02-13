@@ -1,12 +1,43 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import BookAppoitment from "./BookAppoitment";
 import VehicleButton from "../../common/VehicleButton";
+import { useEffect, useState } from "react";
+import { useAppSelector } from "../../../store/hook";
+import axiosInstance from "../../auth/pages/apis/axiosInstance";
 
 const AppoitmentBookOrVehicle = () => {
-  const {
-    state: { vehicles },
-  } = useLocation();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { userType } = useAppSelector((state) => state.auth);
+
+  console.log("state", state);
+  const fetchVehicles = async () => {
+    let responseVehicle;
+    try {
+      setLoading(true);
+      if (userType === "customer") {
+        responseVehicle = await axiosInstance.get("/customer/vehicles");
+      } else if (userType === "admin") {
+        responseVehicle = await axiosInstance.get("/admin/vehicles");
+      }
+
+      setVehicles(responseVehicle?.data?.entity || []);
+    } catch (error) {
+      console.error("Error fetching vehicles", error);
+      setVehicles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+  if (loading) {
+    return;
+  }
   return (
     <>
       {vehicles.length === 0 ? (
@@ -40,13 +71,24 @@ const AppoitmentBookOrVehicle = () => {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl  bg-white p-8 shadow-sm">
-          <h1 className="mb-6 text-xl font-semibold text-gray-800">
-            Book Appointment
-          </h1>
+        <>
+          {" "}
+          <div className="mb-4 flex items-center">
+            <VehicleButton
+              text="Back"
+              onClick={() => {
+                navigate("/appointments");
+              }}
+            />
+          </div>
+          <div className="rounded-xl  bg-white p-8 shadow-sm">
+            <h1 className="mb-6 text-xl font-semibold text-gray-800">
+              Book Appointment
+            </h1>
 
-          <BookAppoitment vehicles={vehicles} />
-        </div>
+            <BookAppoitment vehicles={vehicles} />
+          </div>
+        </>
       )}
     </>
   );

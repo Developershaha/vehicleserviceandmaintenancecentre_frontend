@@ -11,7 +11,6 @@ import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [vehicles, setVehicles] = useState<any[]>([]);
   const [AppoitnmentList, setAppoitmentList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,8 +32,6 @@ const AppointmentList = () => {
             },
           },
         );
-
-        console.log("assign", response?.data?.validationCode);
       } else {
         response = await axiosInstance.put(
           "/customer/appointments/reject",
@@ -75,21 +72,17 @@ const AppointmentList = () => {
     }
   };
   const fetchVehicles = async () => {
-    let responseVehicle;
     let responseAppoitment;
     let responseMechanical;
     let responseAdmin;
     try {
       setLoading(true);
       if (userType === "customer") {
-        responseVehicle = await axiosInstance.get("/customer/vehicles");
-
         responseAppoitment = await axiosInstance.get("/customer/appointments");
       } else if (userType === "mechanic") {
         responseMechanical = await axiosInstance.get("/mechanic/appointments");
       } else if (userType === "admin") {
         responseAdmin = await axiosInstance.get("/admin/appointments/list");
-        responseVehicle = await axiosInstance.get("/admin/vehicles");
       }
 
       setAppoitmentList(
@@ -98,10 +91,9 @@ const AppointmentList = () => {
           responseAdmin?.data?.entity?.appointmentList ||
           [],
       );
-      setVehicles(responseVehicle?.data?.entity || []);
     } catch (error) {
       console.error("Error fetching vehicles", error);
-      setVehicles([]);
+
       setAppoitmentList([]);
     } finally {
       setLoading(false);
@@ -160,7 +152,7 @@ const AppointmentList = () => {
             text="Book Appointment"
             onClick={() =>
               navigate("checkVehicles", {
-                state: { vehicles },
+                state: { redirect: "fromAppoitment" },
               })
             }
           />
@@ -220,26 +212,25 @@ const AppointmentList = () => {
 
                 {!loading &&
                   AppoitnmentList?.length > 0 &&
-                  AppoitnmentList?.map((apt) => (
+                  AppoitnmentList?.map((appoitmemt) => (
                     <tr
-                      key={apt.aptId}
+                      key={appoitmemt?.aptId}
                       className="border-b last:border-b-0 hover:bg-gray-50 transition"
                     >
                       <td className="px-3 py-2 font-medium text-gray-800">
-                        {vehicles?.find((v) => v?.vehId === apt?.aptVehId)
-                          ?.vehVehicleNumber ?? "N/A"}
+                        {appoitmemt?.vehVehicleNumber ?? "N/A"}
                       </td>
 
                       <td className="px-3 py-2 text-gray-700">
-                        {dayjs(apt.aptDate).format("DD/MM/YYYY")}
+                        {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
                       </td>
 
                       <td className="px-3 py-2 text-gray-700">
-                        {apt.aptProblemDescription}
+                        {appoitmemt?.aptProblemDescription}
                       </td>
                       <td className="px-3 py-2">
                         <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          {apt.aptStatus}
+                          {appoitmemt?.aptStatus}
                         </span>
                       </td>
                       {userType === "admin" && (
@@ -250,7 +241,7 @@ const AppointmentList = () => {
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  setSelectedAptId(apt.aptId);
+                                  setSelectedAptId(appoitmemt?.aptId);
                                   setShowAssignRejectModal(true);
                                 }}
                                 className={linkVariable}
@@ -260,7 +251,7 @@ const AppointmentList = () => {
                             </td>
                           </td>
                           <td className="px-3 py-2 text-gray-600 text-center">
-                            {apt?.aptMechanic || "-"}
+                            {appoitmemt?.aptMechanic || "-"}
                           </td>
                           <td className="px-3 py-2">
                             <td className="px-3 py-2 text-center">
@@ -268,7 +259,7 @@ const AppointmentList = () => {
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  setSelectedAptId(apt.aptId);
+                                  setSelectedAptId(appoitmemt?.aptId);
                                 }}
                                 className={linkVariable}
                               >
@@ -279,14 +270,14 @@ const AppointmentList = () => {
                         </>
                       )}
                       <td className="px-3 py-2 text-gray-600">
-                        {dayjs(apt.aptCreated).format("DD/MM/YYYY")}
+                        {dayjs(appoitmemt?.aptCreated).format("DD/MM/YYYY")}
                       </td>
 
                       {/* DELETE */}
                       <td className="px-3 py-2 text-center">
                         <button
                           onClick={() => {
-                            setSelectedAptId(apt.aptId);
+                            setSelectedAptId(appoitmemt?.aptId);
                             setShowDeleteModal(true);
                           }}
                           className="rounded-md bg-red-50 px-5 py-1.5

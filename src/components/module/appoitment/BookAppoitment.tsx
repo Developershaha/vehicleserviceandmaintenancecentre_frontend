@@ -56,7 +56,7 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
     onSubmit: async (values) => {
       try {
         await axiosInstance.post("/customer/appointments", null, {
-          params: { ...values, aptVehId: values?.aptVehId?.value }, // ⚠️ API expects QUERY params
+          params: { ...values, aptVehId: values?.aptVehId?.value },
         });
 
         navigate("/appointments");
