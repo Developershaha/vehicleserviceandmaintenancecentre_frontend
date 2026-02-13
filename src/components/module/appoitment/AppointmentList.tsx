@@ -196,13 +196,13 @@ const AppointmentList = () => {
                       <td className="px-3 py-2 text-gray-700">
                         {apt.aptProblemDescription}
                       </td>
+                      <td className="px-3 py-2">
+                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                          {apt.aptStatus}
+                        </span>
+                      </td>
                       {userType === "admin" && (
                         <>
-                          <td className="px-3 py-2">
-                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                              {apt.aptStatus}
-                            </span>
-                          </td>
                           <td className="px-3 py-2">
                             <td className="px-3 py-2 text-center">
                               <a
