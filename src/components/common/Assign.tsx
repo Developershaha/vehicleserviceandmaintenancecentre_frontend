@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import VehicleAutoSelectField from "./VehicleAutoSelectField";
+import axiosInstance from "../auth/pages/apis/axiosInstance";
 
 type ConfirmAssignRejectModalProps = {
-  open: boolean;
   onClose: () => void;
   onConfirm: (action: "assign" | "reject") => void;
   appointmentData: any;
@@ -14,31 +14,23 @@ const ASSIGN_REJECT_OPTIONS = [
   { label: "Reject", value: "reject" },
 ];
 
-const ConfirmAssignRejectModal = ({
-  open,
-  onClose,
-  onConfirm,
-  appointmentData,
-}: ConfirmAssignRejectModalProps) => {
-  // ✅ derive default option from appointment status
-  const defaultOption =
-    appointmentData?.aptStatus === "APPROVED"
-      ? ASSIGN_REJECT_OPTIONS[0] // Assign
-      : ASSIGN_REJECT_OPTIONS[1]; // Reject
+const Assign = ({ onClose, onConfirm }: ConfirmAssignRejectModalProps) => {
+  const [action, setAction] = useState<"assign" | "reject">();
+  const fetchMechanicList = async () => {
+    const responseAppoitment = await axiosInstance.get("/mechanic/list");
+    console.log("responseAppoitment", responseAppoitment);
+  };
 
-  const [action, setAction] = useState<"assign" | "reject">(
-    defaultOption.value,
-  );
-
+  useEffect(() => {
+    fetchMechanicList();
+  }, []);
   const formik = useFormik({
-    enableReinitialize: true, // 🔥 IMPORTANT
+    enableReinitialize: true,
     initialValues: {
-      vehVehicleType: defaultOption,
+      vehVehicleType: null,
     },
     onSubmit: () => {},
   });
-
-  if (!open) return null;
 
   const isConfirmDisabled = !formik.values.vehVehicleType;
 
@@ -65,7 +57,7 @@ const ConfirmAssignRejectModal = ({
               setAction(val?.value);
             }}
             onBlur={formik.handleBlur}
-            clearable
+            clearable={false}
             required
             disableFilterSelectedOptions
           />
@@ -108,4 +100,4 @@ const ConfirmAssignRejectModal = ({
   );
 };
 
-export default ConfirmAssignRejectModal;
+export default Assign;

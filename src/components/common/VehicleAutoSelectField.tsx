@@ -18,7 +18,7 @@ export interface VehicleAutoSelectProps {
   error?: string;
   touched?: boolean;
   onChange: (value: AutoSelectOption | null) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void; // ✅ FIXED
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const VehicleAutoSelectField = ({
@@ -42,21 +42,29 @@ const VehicleAutoSelectField = ({
 
   const showError = Boolean(error && touched);
 
-  // Sync input text when dropdown closes
+  /* =======================
+     Sync selected value
+     only when dropdown closes
+  ======================= */
   useEffect(() => {
     if (!open) {
       setSearchTerm(value ? value.label : "");
     }
   }, [value, open]);
 
-  // Filter options
+  /* =======================
+     Filter options
+  ======================= */
   const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options; // ✅ show all options
     return options.filter((opt) =>
-      opt?.label.toLowerCase().includes(searchTerm?.toLowerCase()),
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [options, searchTerm]);
 
-  // Close dropdown on outside click
+  /* =======================
+     Close on outside click
+  ======================= */
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -68,7 +76,8 @@ const VehicleAutoSelectField = ({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleClear = (e: React.MouseEvent) => {
@@ -96,13 +105,16 @@ const VehicleAutoSelectField = ({
         <input
           ref={inputRef}
           type="text"
-          name={name} // ✅ REQUIRED for Formik
+          name={name}
           value={searchTerm}
           disabled={disabled}
           className="h-full w-full bg-transparent px-4 pt-4 pb-1 text-sm outline-none"
           placeholder={open ? placeholder : ""}
-          onFocus={() => setOpen(true)}
-          onBlur={onBlur} // ✅ Formik handleBlur
+          onFocus={() => {
+            setSearchTerm(""); // 🔥 KEY FIX → show all options
+            setOpen(true);
+          }}
+          onBlur={onBlur}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             if (!open) setOpen(true);

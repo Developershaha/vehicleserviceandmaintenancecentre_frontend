@@ -7,6 +7,7 @@ import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
+import Assign from "../../common/Assign";
 
 const AppointmentList = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const AppointmentList = () => {
   const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
   const { userType } = useAppSelector((state) => state.auth);
   const [showAssignRejectModal, setShowAssignRejectModal] = useState(false);
+  const [showAssign, setShowAssign] = useState(false);
   const [appointmentData, setAppointmentData] = useState({});
 
   const handleAssignReject = async (action: "assign" | "reject") => {
@@ -261,6 +263,7 @@ const AppointmentList = () => {
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
+                                  setShowAssign(true);
                                   setSelectedAptId(appoitmemt?.aptId);
                                 }}
                                 className={linkVariable}
@@ -326,6 +329,16 @@ const AppointmentList = () => {
         appointmentData={appointmentData}
         onConfirm={handleAssignReject}
       />
+      {showAssign && (
+        <Assign
+          onClose={() => {
+            setShowAssign(false);
+            setSelectedAptId(null);
+          }}
+          appointmentData={appointmentData}
+          onConfirm={handleAssignReject}
+        />
+      )}
     </div>
   );
 };
