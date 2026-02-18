@@ -60,25 +60,15 @@ const AddUser = () => {
     validationSchema: object({
       firstName: string().required("First name required"),
       lastName: string().required("Last name required"),
-
-      username: string()
-        .min(4, "Minimum 4 characters required")
-        .required("Username required"),
-
+      username: string().min(4).required("Username required"),
       mobile: string()
         .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
         .required("Mobile number required"),
-
       email: string().email("Invalid email").required("Email required"),
-
-      password: string()
-        .min(8, "Minimum 8 characters required")
-        .required("Password required"),
-
+      password: string().min(8).required("Password required"),
       confirmPassword: string()
         .oneOf([ref("password")], "Passwords do not match")
         .required("Confirm password required"),
-
       userType: object().nullable().required("User type required"),
     }),
 
@@ -98,7 +88,7 @@ const AddUser = () => {
           useMobile: values.mobile,
           usePassword: values.password,
           useActive: 1,
-          useType: values.userType?.value, // ENUM
+          useType: values.userType?.value,
         };
 
         await registerApi(payload);
@@ -111,7 +101,7 @@ const AddUser = () => {
         );
 
         navigate("/users");
-      } catch (err) {
+      } catch {
         dispatch(
           showSnackbar({
             message: "User creation failed",
@@ -122,7 +112,7 @@ const AddUser = () => {
     },
   });
 
-  /* -------------------- Username Duplicate Check -------------------- */
+  /* ---------------- Username duplicate check ---------------- */
   const debouncedUsername = useDebouncedValue(formik.values.username, 500);
 
   useEffect(() => {
@@ -152,150 +142,164 @@ const AddUser = () => {
     };
   }, [debouncedUsername]);
 
-  /* -------------------- UI -------------------- */
   return (
-    <div className={authStyles.pageWrapper}>
-      <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-xl bg-white p-8 md:p-10 shadow-lg">
-        <h1 className={authStyles.title}>Create User</h1>
-        <p className={authStyles.subtitle}>
-          Register to access Vehicle Service Centre
-        </p>
-
-        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-          {/* Title + User Type */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleAutoSelectField
-              label="Title"
-              name="gender"
-              value={formik.values.gender}
-              options={TITLE_OPTIONS}
-              onChange={(val) => formik.setFieldValue("gender", val)}
-              onBlur={() => formik.setFieldTouched("gender", true)}
-              clearable
-              error={formik.touched.gender ? formik.errors.gender : undefined}
-              touched={formik.touched.gender}
-            />
-            {/* Username */}
-            <VehicleInput
-              label="Username"
-              name="username"
-              required
-              value={formik.values.username}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.username}
-              touched={formik.touched.username}
-            />
-          </div>
-          {/* Name */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="First Name"
-              name="firstName"
-              required
-              value={formik.values.firstName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.firstName}
-              touched={formik.touched.firstName}
-            />
-
-            <VehicleInput
-              label="Last Name"
-              name="lastName"
-              required
-              value={formik.values.lastName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.lastName}
-              touched={formik.touched.lastName}
-            />
-          </div>
-          {/* Contact */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="Mobile Number"
-              name="mobile"
-              required
-              value={formik.values.mobile}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.mobile}
-              touched={formik.touched.mobile}
-            />
-
-            <VehicleInput
-              label="Email"
-              name="email"
-              type="email"
-              required
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.email}
-              touched={formik.touched.email}
-            />
-          </div>{" "}
-          <VehicleAutoSelectField
-            label="User Type"
-            name="useType"
-            required
-            value={formik.values.userType}
-            options={USER_TYPE_OPTIONS}
-            onChange={(val) => formik.setFieldValue("userType", val)}
-            onBlur={() => formik.setFieldTouched("userType", true)}
-            clearable={true}
-            error={formik.touched.userType ? formik.errors.userType : undefined}
-            touched={formik.touched.userType}
-          />
-          {/* Password */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="Password"
-              name="password"
-              type={isShowPassword ? "password" : "text"}
-              required
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.password}
-              touched={formik.touched.password}
-              endIcon={
-                isShowPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )
-              }
-              onEndIconClick={() => setIsShowPassword((p) => !p)}
-            />
-
-            <VehicleInput
-              label="Confirm Password"
-              name="confirmPassword"
-              type={isConfirmPassword ? "password" : "text"}
-              required
-              value={formik.values.confirmPassword}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.confirmPassword}
-              touched={formik.touched.confirmPassword}
-              endIcon={
-                isConfirmPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )
-              }
-              onEndIconClick={() => setIsConfirmPassword((p) => !p)}
-            />
-          </div>
-          <div className="pt-2">
-            <VehicleButton text="Add User" type="submit" align="center" />
-          </div>
-        </form>
+    <>
+      {" "}
+      <div className="mb-4 flex items-center">
+        <VehicleButton text="Back" onClick={() => navigate("/users")} />
       </div>
-    </div>
+      <div className="flex justify-center px-4 py-10">
+        <div className="relative w-full max-w-xl rounded-xl bg-white p-8 shadow-md hover:shadow-lg transition">
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-semibold text-gray-800">Create User</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Register to access Vehicle Service Centre
+            </p>
+          </div>
+          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+            {/* Title + Username */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <VehicleAutoSelectField
+                label="Title"
+                name="gender"
+                value={formik.values.gender}
+                options={TITLE_OPTIONS}
+                onChange={(val) => formik.setFieldValue("gender", val)}
+                onBlur={() => formik.setFieldTouched("gender", true)}
+                clearable
+                error={formik.touched.gender ? formik.errors.gender : undefined}
+                touched={formik.touched.gender}
+              />
+
+              <VehicleInput
+                label="Username"
+                name="username"
+                required
+                value={formik.values.username}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.username}
+                touched={formik.touched.username}
+              />
+            </div>
+
+            {/* Names */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <VehicleInput
+                label="First Name"
+                name="firstName"
+                required
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.firstName}
+                touched={formik.touched.firstName}
+              />
+
+              <VehicleInput
+                label="Last Name"
+                name="lastName"
+                required
+                value={formik.values.lastName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.lastName}
+                touched={formik.touched.lastName}
+              />
+            </div>
+
+            {/* Contact */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <VehicleInput
+                label="Mobile Number"
+                name="mobile"
+                required
+                value={formik.values.mobile}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.mobile}
+                touched={formik.touched.mobile}
+              />
+
+              <VehicleInput
+                label="Email"
+                name="email"
+                type="email"
+                required
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.email}
+                touched={formik.touched.email}
+              />
+            </div>
+
+            {/* User Type */}
+            <VehicleAutoSelectField
+              label="User Type"
+              name="userType"
+              required
+              value={formik.values.userType}
+              options={USER_TYPE_OPTIONS}
+              onChange={(val) => formik.setFieldValue("userType", val)}
+              onBlur={() => formik.setFieldTouched("userType", true)}
+              error={
+                formik.touched.userType ? formik.errors.userType : undefined
+              }
+              touched={formik.touched.userType}
+            />
+
+            {/* Passwords */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <VehicleInput
+                label="Password"
+                name="password"
+                type={isShowPassword ? "password" : "text"}
+                required
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.password}
+                touched={formik.touched.password}
+                endIcon={
+                  isShowPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )
+                }
+                onEndIconClick={() => setIsShowPassword((p) => !p)}
+              />
+
+              <VehicleInput
+                label="Confirm Password"
+                name="confirmPassword"
+                type={isConfirmPassword ? "password" : "text"}
+                required
+                value={formik.values.confirmPassword}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.confirmPassword}
+                touched={formik.touched.confirmPassword}
+                endIcon={
+                  isConfirmPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )
+                }
+                onEndIconClick={() => setIsConfirmPassword((p) => !p)}
+              />
+            </div>
+
+            <div className="pt-2">
+              <VehicleButton text="Add User" type="submit" align="center" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
   );
 };
 

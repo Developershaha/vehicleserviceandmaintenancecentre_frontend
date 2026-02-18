@@ -1,309 +1,202 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import VehicleButton from "../../common/VehicleButton";
+import axiosInstance from "../../auth/pages/apis/axiosInstance";
+import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
-import VehicleButton from "../../common/VehicleButton";
-import VehicleInput from "../../common/VehicleInput";
-import { useFormik } from "formik";
-import { object, ref, string } from "yup";
-import { useEffect, useState } from "react";
-import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
-import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
-import VehicleAutoSelectField, {
-  type AutoSelectOption,
-} from "../../common/VehicleAutoSelectField";
-import { TITLE_OPTIONS } from "../../common/common";
-import { checkUsernameDuplicateApi } from "../../module/hooks/useVehicle";
-import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
-import { registerApi } from "../../auth/pages/apis/loginApi";
-import { authStyles } from "../../auth/pages/authStyles";
 
-/* =======================
-   USER TYPE ENUM OPTIONS
-   ======================= */
-const USER_TYPE_OPTIONS: AutoSelectOption[] = [
-  { label: "Customer", value: "customer" },
-  { label: "Mechanic", value: "mechanic" },
-  { label: "Admin", value: "admin" },
-];
+interface User {
+  useUsername?: string;
+  useTitle?: string;
+  useFirstName?: string;
+  useSurname?: string;
+  useLoggedIn?: number; // 0 | 1
+}
 
-const AddUser = () => {
+const UserList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [isShowPassword, setIsShowPassword] = useState(true);
-  const [isConfirmPassword, setIsConfirmPassword] = useState(true);
-  const [usernameError, setUsernameError] = useState<string | undefined>();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const formik = useFormik<{
-    firstName: string;
-    lastName: string;
-    username: string;
-    mobile: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    gender: AutoSelectOption | null;
-    userType: AutoSelectOption | null;
-  }>({
-    initialValues: {
-      firstName: "",
-      lastName: "",
-      username: "",
-      mobile: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      gender: null,
-      userType: null,
-    },
+  /* =======================
+     Fetch Users
+     ======================= */
+  const fetchUsers = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get<{ entity?: User[] }>(
+        "auth/user/list",
+      );
 
-    validationSchema: object({
-      firstName: string().required("First name required"),
-      lastName: string().required("Last name required"),
-
-      username: string()
-        .min(4, "Minimum 4 characters required")
-        .required("Username required"),
-
-      mobile: string()
-        .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
-        .required("Mobile number required"),
-
-      email: string().email("Invalid email").required("Email required"),
-
-      password: string()
-        .min(8, "Minimum 8 characters required")
-        .required("Password required"),
-
-      confirmPassword: string()
-        .oneOf([ref("password")], "Passwords do not match")
-        .required("Confirm password required"),
-
-      userType: object().nullable().required("User type required"),
-    }),
-
-    validate: () => {
-      if (!usernameError) return {};
-      return { username: usernameError };
-    },
-
-    onSubmit: async (values) => {
-      try {
-        const payload = {
-          useUsername: values.username,
-          useTitle: values.gender?.value,
-          useFirstName: values.firstName,
-          useSurname: values.lastName,
-          useEmail: values.email,
-          useMobile: values.mobile,
-          usePassword: values.password,
-          useActive: 1,
-          useType: values.userType?.value, // ENUM
-        };
-
-        await registerApi(payload);
-
-        dispatch(
-          showSnackbar({
-            message: "User created successfully",
-            type: "success",
-          }),
-        );
-
-        navigate("/users");
-      } catch (err) {
-        dispatch(
-          showSnackbar({
-            message: "User creation failed",
-            type: "error",
-          }),
-        );
-      }
-    },
-  });
-
-  /* -------------------- Username Duplicate Check -------------------- */
-  const debouncedUsername = useDebouncedValue(formik.values.username, 500);
+      setUsers(response?.data?.entity ?? []);
+    } catch (error) {
+      console.error("Error fetching users", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!debouncedUsername || debouncedUsername.length < 4) {
-      setUsernameError(undefined);
-      return;
+    fetchUsers();
+  }, []);
+
+  /* =======================
+     Delete User
+     ======================= */
+  const handleDelete = async (): Promise<void> => {
+    if (!selectedUser?.useUsername) return;
+
+    try {
+      // 🔴 Replace with actual delete user API
+      // await deleteUserApi(selectedUser.useUsername);
+
+      dispatch(
+        showSnackbar({
+          message: "User deleted successfully",
+          type: "success",
+        }),
+      );
+
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user", error);
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedUser(null);
     }
+  };
 
-    let cancelled = false;
+  /* =======================
+     Helper
+     ======================= */
+  const capitalizeFirstLetter = (value?: string): string =>
+    value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "-";
 
-    const checkDuplicate = async () => {
-      const res = await checkUsernameDuplicateApi(debouncedUsername);
-      if (cancelled) return;
-
-      if (res?.data?.validationCode === "user.already.exist") {
-        formik.setFieldTouched("username", true, false);
-        formik.setFieldError("username", "Username already exists");
-        setUsernameError("Username already exists");
-      } else {
-        setUsernameError(undefined);
-      }
-    };
-
-    checkDuplicate();
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedUsername]);
-
-  /* -------------------- UI -------------------- */
   return (
-    <div className={authStyles.pageWrapper}>
-      <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-xl bg-white p-8 md:p-10 shadow-lg">
-        <h1 className={authStyles.title}>Create User</h1>
-        <p className={authStyles.subtitle}>
-          Register to access Vehicle Service Centre
-        </p>
+    <div className="p-6">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-gray-800">Users List</h1>
 
-        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-          {/* Title + User Type */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleAutoSelectField
-              label="Title"
-              name="gender"
-              value={formik.values.gender}
-              options={TITLE_OPTIONS}
-              onChange={(val) => formik.setFieldValue("gender", val)}
-              onBlur={() => formik.setFieldTouched("gender", true)}
-              clearable
-              error={formik.touched.gender ? formik.errors.gender : undefined}
-              touched={formik.touched.gender}
-            />
-
-            <VehicleAutoSelectField
-              label="User Type"
-              name="userType"
-              value={formik.values.userType}
-              options={USER_TYPE_OPTIONS}
-              onChange={(val) => formik.setFieldValue("userType", val)}
-              onBlur={() => formik.setFieldTouched("userType", true)}
-              clearable={false}
-              error={
-                formik.touched.userType ? formik.errors.userType : undefined
-              }
-              touched={formik.touched.userType}
-            />
-          </div>
-
-          {/* Username */}
-          <VehicleInput
-            label="Username"
-            name="username"
-            required
-            value={formik.values.username}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.errors.username}
-            touched={formik.touched.username}
+          <VehicleButton
+            text="Add User"
+            onClick={() => navigate("/users/add")}
           />
+        </div>
 
-          {/* Name */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="First Name"
-              name="firstName"
-              required
-              value={formik.values.firstName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.firstName}
-              touched={formik.touched.firstName}
-            />
+        {/* Table */}
+        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="bg-gray-50">
+                <tr className="border-b">
+                  <th className="px-3 py-2 text-left">Username</th>
+                  <th className="px-3 py-2 text-left">Title</th>
+                  <th className="px-3 py-2 text-left">First Name</th>
+                  <th className="px-3 py-2 text-left">Last Name</th>
+                  <th className="px-3 py-2 text-center">Logged In</th>
+                  <th className="px-3 py-2 text-center">Edit</th>
+                  <th className="px-3 py-2 text-center">Delete</th>
+                </tr>
+              </thead>
 
-            <VehicleInput
-              label="Last Name"
-              name="lastName"
-              required
-              value={formik.values.lastName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.lastName}
-              touched={formik.touched.lastName}
-            />
+              <tbody>
+                {/* Loading */}
+                {loading && (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-gray-500">
+                      Loading users...
+                    </td>
+                  </tr>
+                )}
+
+                {/* Data */}
+                {!loading &&
+                  users?.length > 0 &&
+                  users.map((user) => (
+                    <tr
+                      key={user?.useUsername}
+                      className="border-b hover:bg-gray-50"
+                    >
+                      <td className="px-3 py-2 font-medium">
+                        {user?.useUsername ?? "-"}
+                      </td>
+                      <td className="px-3 py-2">{user?.useTitle ?? "-"}</td>
+                      <td className="px-3 py-2">
+                        {capitalizeFirstLetter(user?.useFirstName)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {capitalizeFirstLetter(user?.useSurname)}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {user?.useLoggedIn === 1 ? "Yes" : "No"}
+                      </td>
+
+                      {/* Edit */}
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          onClick={() =>
+                            navigate("/users/add", {
+                              state: { user },
+                            })
+                          }
+                          className="rounded-md bg-blue-50 px-4 py-1.5
+                          text-sm text-blue-600 border border-blue-200
+                          hover:bg-blue-100"
+                        >
+                          Edit
+                        </button>
+                      </td>
+
+                      {/* Delete */}
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowDeleteModal(true);
+                          }}
+                          className="rounded-md bg-red-50 px-4 py-1.5
+                          text-sm text-red-600 border border-red-200
+                          hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                {/* Empty */}
+                {!loading && users?.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-gray-500">
+                      No users found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-
-          {/* Contact */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="Mobile Number"
-              name="mobile"
-              required
-              value={formik.values.mobile}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.mobile}
-              touched={formik.touched.mobile}
-            />
-
-            <VehicleInput
-              label="Email"
-              name="email"
-              type="email"
-              required
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.email}
-              touched={formik.touched.email}
-            />
-          </div>
-
-          {/* Password */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VehicleInput
-              label="Password"
-              name="password"
-              type={isShowPassword ? "password" : "text"}
-              required
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.password}
-              touched={formik.touched.password}
-              endIcon={
-                isShowPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )
-              }
-              onEndIconClick={() => setIsShowPassword((p) => !p)}
-            />
-
-            <VehicleInput
-              label="Confirm Password"
-              name="confirmPassword"
-              type={isConfirmPassword ? "password" : "text"}
-              required
-              value={formik.values.confirmPassword}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.errors.confirmPassword}
-              touched={formik.touched.confirmPassword}
-              endIcon={
-                isConfirmPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )
-              }
-              onEndIconClick={() => setIsConfirmPassword((p) => !p)}
-            />
-          </div>
-
-          <div className="pt-2">
-            <VehicleButton text="Add User" type="submit" align="center" />
-          </div>
-        </form>
+        </div>
       </div>
+
+      {/* Delete Modal */}
+      <ConfirmDeleteModal
+        open={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };
 
-export default AddUser;
+export default UserList;

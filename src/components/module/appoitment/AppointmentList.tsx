@@ -8,7 +8,9 @@ import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
 import AssignMechanicModal from "../../common/AssignMechanicModal";
-
+/* ✅ MUI Icons */
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -21,6 +23,7 @@ const AppointmentList = () => {
   const [showAssignRejectModal, setShowAssignRejectModal] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
   const [appointmentData, setAppointmentData] = useState({});
+  const [expandedAptId, setExpandedAptId] = useState<number | null>(null);
 
   const handleAssignReject = async (action: "assign" | "reject") => {
     if (!selectedAptId) return;
@@ -191,16 +194,16 @@ const AppointmentList = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead className="bg-gray-50">
+                {/* Collapsible column */}
                 <tr className="border-b">
+                  <th className="px-3 py-2 cursor-pointer text-center"></th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Vehicle Number
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Appointment Date
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">
-                    Problem
-                  </th>
+
                   <th className="px-3 py-2 text-left font-medium text-gray-600">
                     Status
                   </th>
@@ -245,14 +248,31 @@ const AppointmentList = () => {
                 {!loading &&
                   AppoitnmentList?.length > 0 &&
                   AppoitnmentList?.map((appoitmemt) => {
+                    const isExpanded = expandedAptId === appoitmemt?.aptId;
+
                     const isDisabled = Boolean(appoitmemt?.aptMechanic);
                     return (
                       <>
                         {" "}
+                        {/* Main Row */}
                         <tr
                           key={appoitmemt?.aptId}
                           className="border-b last:border-b-0 hover:bg-gray-50 transition"
                         >
+                          <td
+                            className="px-3 py-2 cursor-pointer text-center"
+                            onClick={() =>
+                              setExpandedAptId(
+                                isExpanded ? null : appoitmemt?.aptId,
+                              )
+                            }
+                          >
+                            {isExpanded ? (
+                              <KeyboardArrowDownIcon fontSize="small" />
+                            ) : (
+                              <KeyboardArrowRightIcon fontSize="small" />
+                            )}
+                          </td>
                           <td className="px-3 py-2 font-medium text-gray-800">
                             {appoitmemt?.vehVehicleNumber ?? "N/A"}
                           </td>
@@ -261,9 +281,6 @@ const AppointmentList = () => {
                             {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
                           </td>
 
-                          <td className="px-3 py-2 text-gray-700">
-                            {appoitmemt?.aptProblemDescription}
-                          </td>
                           <td className="px-3 py-2">
                             <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                               {appoitmemt?.aptStatus}
@@ -389,6 +406,22 @@ const AppointmentList = () => {
                                   )}
                                 </button>
                               </td>
+                              {isExpanded && (
+                                <tr className="bg-gray-50">
+                                  <td
+                                    // colSpan={columnSpan}
+                                    className="px-6 py-4"
+                                  >
+                                    <div className="text-sm text-gray-700">
+                                      <span className="font-semibold">
+                                        Problem:
+                                      </span>{" "}
+                                      {appoitmemt?.aptProblemDescription ||
+                                        "No problem description"}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
                             </>
                           )}
 
