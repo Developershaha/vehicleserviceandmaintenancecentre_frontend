@@ -37,7 +37,7 @@ const validationSchema = Yup.object({
 });
 
 const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
-  const vehicleOptions = vehicles.map((v) => ({
+  const vehicleOptions = vehicles?.map((v) => ({
     label: v.vehVehicleNumber, // 👈 what user sees
     value: v.vehId, // 👈 what you submit
   }));

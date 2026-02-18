@@ -10,6 +10,7 @@ import AddVehicle from "./AddVehicle";
 import MainLayout from "../components/common/MainLayout";
 import AppointmentList from "../components/module/appoitment/AppointmentList";
 import AppoitmentBookOrVehicle from "../components/module/appoitment/AppoitmentBookOrVehicle";
+import UserList from "../components/module/user/UserList";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,9 @@ const AppRoutes = () => {
             element={<AppoitmentBookOrVehicle />}
           />
           <Route path="/appointments/add" element={<AddVehicle />} />
+          {/* 👤 User Module */}
+          <Route path="/users" element={<UserList />} />
+          {/* <Route path="/users/add" element={<AddUser />} /> */}
         </Route>
 
         {/* Fallback */}

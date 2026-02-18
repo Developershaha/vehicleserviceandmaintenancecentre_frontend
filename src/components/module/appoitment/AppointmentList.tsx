@@ -218,12 +218,12 @@ const AppointmentList = () => {
                       <th className="px-3 py-2 text-left font-medium text-gray-600">
                         Assign Mechanic
                       </th>
+                      <th className="px-3 py-2 text-center font-medium text-gray-600">
+                        Create Job Card
+                      </th>
                     </>
                   )}
 
-                  <th className="px-3 py-2 text-center font-medium text-gray-600">
-                    Create Job Card
-                  </th>
                   <th className="px-3 py-2 text-center font-medium text-gray-600">
                     Delete
                   </th>
@@ -280,8 +280,7 @@ const AppointmentList = () => {
                                     href="#"
                                     onClick={(e) => {
                                       e.preventDefault();
-                                      if (isDisabled) return; // ✅ block click
-
+                                      if (isDisabled) return;
                                       setAppointmentData(appoitmemt);
                                       setSelectedAptId(appoitmemt?.aptId);
                                       setShowAssignRejectModal(true);
@@ -317,44 +316,81 @@ const AppointmentList = () => {
                                       setSelectedAptId(appoitmemt?.aptId);
                                     }}
                                     className={`${linkVariable} ${
-                                      isDisabled
+                                      isDisabled ||
+                                      appoitmemt?.aptStatus !== "APPROVED"
                                         ? "pointer-events-none cursor-not-allowed text-gray-400 no-underline"
                                         : ""
                                     }`}
-                                    aria-disabled={isDisabled}
+                                    aria-disabled={
+                                      isDisabled ||
+                                      appoitmemt?.aptStatus !== "APPROVED"
+                                    }
                                   >
                                     Assign
                                   </a>
                                 </td>
                               </td>
+                              {/* jon card button  */}
+                              <td className="px-3 py-2 text-center whitespace-nowrap">
+                                <button
+                                  onClick={async () => {
+                                    if (!appoitmemt?.aptId) return;
+                                    setJobCardCreatedId(appoitmemt?.aptId);
+                                    const response = await axiosInstance.post(
+                                      "admin/job-cards",
+                                      null,
+                                      {
+                                        params: {
+                                          aptId: appoitmemt?.aptId,
+                                        },
+                                      },
+                                    );
+                                    console.log(
+                                      "response",
+                                      response?.data?.validationCode,
+                                    );
+
+                                    if (
+                                      response?.data?.validationCode ===
+                                      "job.card.create.success"
+                                    ) {
+                                      dispatch(
+                                        showSnackbar({
+                                          message:
+                                            "Customer job card created successfully",
+                                          type: "success",
+                                        }),
+                                      );
+
+                                      fetchVehicles();
+
+                                      setShowDeleteModal(false);
+                                      setSelectedAptId(null);
+                                    }
+                                  }}
+                                  // className={`${linkVariable} ${
+                                  //   isDisabled ||
+                                  //   appoitmemt?.aptStatus === "APPROVED"
+                                  //     ? "pointer-events-none cursor-not-allowed text-gray-400 no-underline"
+                                  //     : ""
+                                  // }`}
+                                  // aria-disabled={
+                                  //   isDisabled ||
+                                  //   appoitmemt?.aptStatus === "APPROVED"
+                                  // }
+                                  className={`inline-flex w-28 items-center justify-center gap-2 rounded-md px-4 py-1.5 text-sm font-medium border transition-all ${jobCardCreatedId === appoitmemt?.aptId ? "bg-blue-100 text-blue-700 border-blue-300" : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300"} active:scale-95`}
+                                >
+                                  Job Card
+                                  {/* ✅ Tick icon after click */}
+                                  {jobCardCreatedId === appoitmemt?.aptId && (
+                                    <span className="text-blue-700 font-bold">
+                                      ✔
+                                    </span>
+                                  )}
+                                </button>
+                              </td>
                             </>
                           )}
-                          {/* jon card button  */}
-                          <td className="px-3 py-2 text-center whitespace-nowrap">
-                            <button
-                              onClick={() => {
-                                setSelectedAptId(appoitmemt?.aptId);
-
-                                // ✅ mark this row as clicked
-                                setJobCardCreatedId(appoitmemt?.aptId);
-                              }}
-                              className={`inline-flex w-28 items-center justify-center gap-2 rounded-md px-4 py-1.5 text-sm font-medium border transition-all
-      ${
-        jobCardCreatedId === appoitmemt?.aptId
-          ? "bg-blue-100 text-blue-700 border-blue-300"
-          : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
-      }
-      active:scale-95`}
-                            >
-                              Job Card
-                              {/* ✅ Tick icon after click */}
-                              {jobCardCreatedId === appoitmemt?.aptId && (
-                                <span className="text-blue-700 font-bold">
-                                  ✔
-                                </span>
-                              )}
-                            </button>
-                          </td>
 
                           {/* DELETE */}
                           <td className="px-3 py-2 text-center">

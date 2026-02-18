@@ -7,12 +7,10 @@ import axiosInstance from "../../auth/pages/apis/axiosInstance";
 
 const AppoitmentBookOrVehicle = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { userType } = useAppSelector((state) => state.auth);
 
-  console.log("state", state);
   const fetchVehicles = async () => {
     let responseVehicle;
     try {
@@ -22,8 +20,11 @@ const AppoitmentBookOrVehicle = () => {
       } else if (userType === "admin") {
         responseVehicle = await axiosInstance.get("/admin/vehicles");
       }
-
-      setVehicles(responseVehicle?.data?.entity || []);
+      if (userType === "admin") {
+        setVehicles(responseVehicle?.data?.entity?.finalVehicleList || []);
+      } else {
+        setVehicles(responseVehicle?.data?.entity || []);
+      }
     } catch (error) {
       console.error("Error fetching vehicles", error);
       setVehicles([]);
@@ -35,9 +36,11 @@ const AppoitmentBookOrVehicle = () => {
   useEffect(() => {
     fetchVehicles();
   }, []);
+
   if (loading) {
     return;
   }
+
   return (
     <>
       {vehicles.length === 0 ? (
