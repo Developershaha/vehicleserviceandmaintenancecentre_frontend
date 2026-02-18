@@ -11,6 +11,7 @@ import MainLayout from "../components/common/MainLayout";
 import AppointmentList from "../components/module/appoitment/AppointmentList";
 import AppoitmentBookOrVehicle from "../components/module/appoitment/AppoitmentBookOrVehicle";
 import UserList from "../components/module/user/UserList";
+import AddUser from "../components/module/user/AddUser";
 
 const AppRoutes = () => {
   return (
@@ -37,7 +38,7 @@ const AppRoutes = () => {
           <Route path="/appointments/add" element={<AddVehicle />} />
           {/* 👤 User Module */}
           <Route path="/users" element={<UserList />} />
-          {/* <Route path="/users/add" element={<AddUser />} /> */}
+          <Route path="/users/add" element={<AddUser />} />
         </Route>
 
         {/* Fallback */}

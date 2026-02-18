@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { authStyles } from "./authStyles";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
 import VehicleInput from "../../common/VehicleInput";
@@ -24,7 +24,9 @@ const Register = () => {
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [isConfirmPassword, setIsConfirmPassword] = useState(true);
   const [usernameError, setUsernameError] = useState<string | undefined>();
+  const { userType } = useAppSelector((state) => state.auth);
 
+  console.log("userType", userType === "admin");
   const formik = useFormik<{
     firstName: string;
     lastName: string;
@@ -144,7 +146,9 @@ const Register = () => {
   return (
     <div className={authStyles.pageWrapper}>
       <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-xl bg-white p-8 md:p-10 shadow-lg">
-        <h1 className={authStyles.title}>Create Account</h1>
+        <h1 className={authStyles.title}>
+          Create {userType === "admin" ? "User" : "Account"}
+        </h1>
         <p className={authStyles.subtitle}>
           Register to access Vehicle Service Centre
         </p>
@@ -271,19 +275,25 @@ const Register = () => {
           </div>
 
           <div className="pt-2">
-            <VehicleButton text="Register" type="submit" align="center" />
+            <VehicleButton
+              text={userType === "admin" ? "Add User" : "Register"}
+              type="submit"
+              align="center"
+            />
           </div>
         </form>
 
-        <p className={`${authStyles.subtitle} mt-4`}>
-          Already have an account?{" "}
-          <span
-            className="cursor-pointer text-blue-600 hover:underline"
-            onClick={() => navigate("/")}
-          >
-            Login
-          </span>
-        </p>
+        {userType !== "admin" && (
+          <p className={`${authStyles.subtitle} mt-4`}>
+            Already have an account?{" "}
+            <span
+              className="cursor-pointer text-blue-600 hover:underline"
+              onClick={() => navigate("/")}
+            >
+              Login
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );

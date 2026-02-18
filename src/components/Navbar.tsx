@@ -8,6 +8,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const userDetails = useAppSelector((state) => state.auth);
+
   const handleLogout = async () => {
     const logoutResponse = await logoutApi(userDetails?.username ?? "");
 
@@ -19,19 +20,23 @@ const Navbar = () => {
           type: "success",
         }),
       );
-
-      // ➡️ redirect to login
       navigate("/");
     }
   };
 
   return (
-    <nav className="flex items-center justify-between bg-[oklch(95.3%_0.051_180.801)] px-6 py-4 border-b border-slate-300">
+    <nav
+      className="sticky top-0 z-50
+                 flex items-center justify-between
+                 bg-[oklch(95.3%_0.051_180.801)]
+                 px-6 py-4
+                 border-b border-slate-300"
+    >
       <Link to="/dashboard">
         <h2
           className="inline-block rounded-md border border-slate-300 px-3 py-1
-               text-lg font-bold text-slate-900 cursor-pointer
-               hover:bg-slate-50 hover:border-slate-400 transition"
+                     text-lg font-bold text-slate-900 cursor-pointer
+                     hover:bg-slate-50 hover:border-slate-400 transition"
         >
           Vehicle Service Centre
         </h2>
@@ -47,7 +52,8 @@ const Navbar = () => {
 
         <button
           onClick={handleLogout}
-          className="rounded-md px-3 py-1.5 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition"
+          className="rounded-md px-3 py-1.5 text-sm font-semibold
+                     bg-red-500 hover:bg-red-600 text-white transition"
         >
           Logout
         </button>
