@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../../store/hook";
+import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
 import VehicleInput from "../../common/VehicleInput";
@@ -17,6 +17,15 @@ import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
 import { registerApi } from "../../auth/pages/apis/loginApi";
 import { authStyles } from "../../auth/pages/authStyles";
 
+/* =======================
+   USER TYPE ENUM OPTIONS
+   ======================= */
+const USER_TYPE_OPTIONS: AutoSelectOption[] = [
+  { label: "Customer", value: "customer" },
+  { label: "Mechanic", value: "mechanic" },
+  { label: "Admin", value: "admin" },
+];
+
 const AddUser = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -24,6 +33,7 @@ const AddUser = () => {
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [isConfirmPassword, setIsConfirmPassword] = useState(true);
   const [usernameError, setUsernameError] = useState<string | undefined>();
+
   const formik = useFormik<{
     firstName: string;
     lastName: string;
@@ -33,6 +43,7 @@ const AddUser = () => {
     password: string;
     confirmPassword: string;
     gender: AutoSelectOption | null;
+    userType: AutoSelectOption | null;
   }>({
     initialValues: {
       firstName: "",
@@ -43,6 +54,7 @@ const AddUser = () => {
       password: "",
       confirmPassword: "",
       gender: null,
+      userType: null,
     },
 
     validationSchema: object({
@@ -66,12 +78,13 @@ const AddUser = () => {
       confirmPassword: string()
         .oneOf([ref("password")], "Passwords do not match")
         .required("Confirm password required"),
+
+      userType: object().nullable().required("User type required"),
     }),
+
     validate: () => {
       if (!usernameError) return {};
-      return {
-        username: usernameError,
-      };
+      return { username: usernameError };
     },
 
     onSubmit: async (values) => {
@@ -85,23 +98,23 @@ const AddUser = () => {
           useMobile: values.mobile,
           usePassword: values.password,
           useActive: 1,
-          useType: "customer",
+          useType: values.userType?.value, // ENUM
         };
 
         await registerApi(payload);
 
         dispatch(
           showSnackbar({
-            message: "Registration successful. Please login.",
+            message: "User created successfully",
             type: "success",
           }),
         );
 
-        navigate("/");
+        navigate("/users");
       } catch (err) {
         dispatch(
           showSnackbar({
-            message: "Registration failed",
+            message: "User creation failed",
             type: "error",
           }),
         );
@@ -109,8 +122,9 @@ const AddUser = () => {
     },
   });
 
-  /* -------------------- Debounced Username Check -------------------- */
+  /* -------------------- Username Duplicate Check -------------------- */
   const debouncedUsername = useDebouncedValue(formik.values.username, 500);
+
   useEffect(() => {
     if (!debouncedUsername || debouncedUsername.length < 4) {
       setUsernameError(undefined);
@@ -121,14 +135,13 @@ const AddUser = () => {
 
     const checkDuplicate = async () => {
       const res = await checkUsernameDuplicateApi(debouncedUsername);
-
       if (cancelled) return;
 
       if (res?.data?.validationCode === "user.already.exist") {
-        formik.setFieldTouched("username", true, false); // ✅ REQUIRED
+        formik.setFieldTouched("username", true, false);
         formik.setFieldError("username", "Username already exists");
         setUsernameError("Username already exists");
-      } else if (res?.data?.validationCode === "user.not.found") {
+      } else {
         setUsernameError(undefined);
       }
     };
@@ -148,7 +161,8 @@ const AddUser = () => {
           Register to access Vehicle Service Centre
         </p>
 
-        <form onSubmit={formik.handleSubmit} className="flex flex-col">
+        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+          {/* Title + User Type */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleAutoSelectField
               label="Title"
@@ -161,23 +175,19 @@ const AddUser = () => {
               error={formik.touched.gender ? formik.errors.gender : undefined}
               touched={formik.touched.gender}
             />
-
+            {/* Username */}
             <VehicleInput
               label="Username"
               name="username"
               required
               value={formik.values.username}
-              onChange={(e) => {
-                formik.handleChange(e);
-              }}
-              onBlur={(e) => {
-                formik.handleBlur(e);
-              }}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               error={formik.errors.username}
               touched={formik.touched.username}
             />
           </div>
-
+          {/* Name */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="First Name"
@@ -201,7 +211,7 @@ const AddUser = () => {
               touched={formik.touched.lastName}
             />
           </div>
-
+          {/* Contact */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="Mobile Number"
@@ -225,8 +235,20 @@ const AddUser = () => {
               error={formik.errors.email}
               touched={formik.touched.email}
             />
-          </div>
-
+          </div>{" "}
+          <VehicleAutoSelectField
+            label="User Type"
+            name="useType"
+            required
+            value={formik.values.userType}
+            options={USER_TYPE_OPTIONS}
+            onChange={(val) => formik.setFieldValue("userType", val)}
+            onBlur={() => formik.setFieldTouched("userType", true)}
+            clearable={true}
+            error={formik.touched.userType ? formik.errors.userType : undefined}
+            touched={formik.touched.userType}
+          />
+          {/* Password */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <VehicleInput
               label="Password"
@@ -268,7 +290,6 @@ const AddUser = () => {
               onEndIconClick={() => setIsConfirmPassword((p) => !p)}
             />
           </div>
-
           <div className="pt-2">
             <VehicleButton text="Add User" type="submit" align="center" />
           </div>
