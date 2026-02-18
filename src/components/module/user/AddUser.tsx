@@ -154,7 +154,7 @@ const AddUser = () => {
           <div className="mb-6 text-center">
             <h1 className="text-xl font-semibold text-gray-800">Create User</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Register to access Vehicle Service Centre
+              Create user to access Vehicle Service Centre
             </p>
           </div>
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
