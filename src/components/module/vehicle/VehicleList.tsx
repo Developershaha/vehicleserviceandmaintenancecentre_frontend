@@ -7,6 +7,7 @@ import { deleteVehicleApi } from "../hooks/useVehicle";
 import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
+import CommonPagination from "../../common/CommonPagination";
 
 const VehicleList = () => {
   const navigate = useNavigate();
@@ -16,7 +17,8 @@ const VehicleList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehId, setSelectedVehId] = useState<number | null>(null);
   const { userType } = useAppSelector((state) => state.auth);
-
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const fetchVehicles = async () => {
     let response;
     try {
@@ -24,11 +26,16 @@ const VehicleList = () => {
       if (userType === "customer") {
         response = await axiosInstance.get("/customer/vehicles");
       } else if (userType === "admin") {
-        response = await axiosInstance.get("/admin/vehicles");
+        response = await axiosInstance.get("/admin/vehicles", {
+          params: { pageNumber: page },
+        });
       }
 
       if (userType === "admin") {
         setVehicles(response?.data?.entity?.finalVehicleList || []);
+        if (response?.data?.entity?.vehicleCount) {
+          setTotalCount(response?.data?.entity?.vehicleCount);
+        }
       } else {
         setVehicles(response?.data?.entity || []);
       }
@@ -42,7 +49,7 @@ const VehicleList = () => {
 
   useEffect(() => {
     fetchVehicles();
-  }, []);
+  }, [page]);
 
   const handleDelete = async () => {
     if (!selectedVehId) return;
@@ -66,8 +73,6 @@ const VehicleList = () => {
       setSelectedVehId(null);
     }
   };
-
-  console.log("vehicles", vehicles);
 
   return (
     <div className="p-6">
@@ -195,6 +200,11 @@ const VehicleList = () => {
           </div>
         </div>
       </div>
+      <CommonPagination
+        totalCount={totalCount}
+        currentPage={page}
+        onPageChange={(newPage) => setPage(newPage)}
+      />
       <ConfirmDeleteModal
         open={showDeleteModal}
         onClose={() => {
