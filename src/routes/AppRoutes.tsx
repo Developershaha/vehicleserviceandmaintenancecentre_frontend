@@ -15,36 +15,36 @@ import AddUser from "../components/module/user/AddUser";
 
 const AppRoutes = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Auth (NO Navbar) */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    // <BrowserRouter>
+    <Routes>
+      {/* Auth (NO Navbar) */}
+      <Route path="/" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-        {/* App layout (WITH Navbar) */}
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/services" element={<Services />} />
+      {/* App layout (WITH Navbar) */}
+      <Route element={<MainLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/services" element={<Services />} />
 
-          {/* 🚗 Vehicle Module */}
-          <Route path="/vehicles" element={<VehicleList />} />
-          <Route path="/vehicles/add" element={<AddVehicle />} />
-          {/* 🚗 Vehicle Module */}
-          <Route path="/appointments" element={<AppointmentList />} />
-          <Route
-            path="/appointments/checkVehicles"
-            element={<AppoitmentBookOrVehicle />}
-          />
-          <Route path="/appointments/add" element={<AddVehicle />} />
-          {/* 👤 User Module */}
-          <Route path="/users" element={<UserList />} />
-          <Route path="/users/add" element={<AddUser />} />
-        </Route>
+        {/* 🚗 Vehicle Module */}
+        <Route path="/vehicles" element={<VehicleList />} />
+        <Route path="/vehicles/add" element={<AddVehicle />} />
+        {/* 🚗 Vehicle Module */}
+        <Route path="/appointments" element={<AppointmentList />} />
+        <Route
+          path="/appointments/checkVehicles"
+          element={<AppoitmentBookOrVehicle />}
+        />
+        <Route path="/appointments/add" element={<AddVehicle />} />
+        {/* 👤 User Module */}
+        <Route path="/users" element={<UserList />} />
+        <Route path="/users/add" element={<AddUser />} />
+      </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+      {/* Fallback */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+    // </BrowserRouter>
   );
 };
 

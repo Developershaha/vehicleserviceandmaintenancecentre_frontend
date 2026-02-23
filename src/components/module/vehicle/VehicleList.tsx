@@ -199,12 +199,13 @@ const VehicleList = () => {
             </table>
           </div>
         </div>
+        <CommonPagination
+          totalCount={totalCount}
+          currentPage={page}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </div>
-      <CommonPagination
-        totalCount={totalCount}
-        currentPage={page}
-        onPageChange={(newPage) => setPage(newPage)}
-      />
+
       <ConfirmDeleteModal
         open={showDeleteModal}
         onClose={() => {
