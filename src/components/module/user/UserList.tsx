@@ -5,6 +5,7 @@ import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
+import { TITLE_OPTIONS } from "../../common/common";
 
 interface User {
   useUsername?: string;
@@ -128,7 +129,11 @@ const UserList = () => {
                       <td className="px-3 py-2 font-medium">
                         {user?.useUsername ?? "-"}
                       </td>
-                      <td className="px-3 py-2">{user?.useTitle ?? "-"}</td>
+                      <td className="px-3 py-2">
+                        {TITLE_OPTIONS.find(
+                          (option) => option?.value === user?.useTitle,
+                        )?.label ?? "-"}
+                      </td>
                       <td className="px-3 py-2">
                         {capitalizeFirstLetter(user?.useFirstName)}
                       </td>
@@ -194,6 +199,8 @@ const UserList = () => {
           setSelectedUser(null);
         }}
         onConfirm={handleDelete}
+        user="Vehicle"
+        message="Are you sure you want to delete this vehicle?"
       />
     </div>
   );

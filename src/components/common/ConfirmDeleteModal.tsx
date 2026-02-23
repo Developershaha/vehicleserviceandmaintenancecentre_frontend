@@ -2,22 +2,30 @@ type ConfirmDeleteModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  user?: string;
+  message?: string;
 };
 
 const ConfirmDeleteModal = ({
   open,
   onClose,
   onConfirm,
+  user,
+  message,
 }: ConfirmDeleteModalProps) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="text-lg font-semibold text-gray-800">Delete Vehicle</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Delete {user ? "User" : "Vehicle"}
+        </h2>
 
         <p className="mt-2 text-sm text-gray-600">
-          Are you sure you want to delete this vehicle?
+          {message
+            ? "Are you sure you want to delete this user ?"
+            : "Are you sure you want to delete this vehicle ?"}
         </p>
 
         <div className="mt-6 flex justify-end gap-3">

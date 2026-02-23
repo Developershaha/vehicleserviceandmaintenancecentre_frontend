@@ -98,6 +98,15 @@ const Login = () => {
           );
 
           navigate("/dashboard");
+        } else if (
+          response?.data?.validationCode === "username.or.password.incorrect"
+        ) {
+          dispatch(
+            showSnackbar({
+              message: "Invalid username or password",
+              type: "error",
+            }),
+          );
         }
       } catch (err) {
         dispatch(

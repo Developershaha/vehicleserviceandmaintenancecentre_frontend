@@ -12,6 +12,7 @@ import AssignMechanicModal from "../../common/AssignMechanicModal";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CommonPagination from "../../common/CommonPagination";
+import { TITLE_OPTIONS } from "../../common/common";
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -28,11 +29,11 @@ const AppointmentList = () => {
   const [appointmentData, setAppointmentData] = useState({});
   const [expandedAptId, setExpandedAptId] = useState<number | null>(null);
 
-  const handleAssignReject = async (action: "assign" | "reject") => {
+  const handleAssignReject = async (action: "approve" | "reject") => {
     if (!selectedAptId) return;
     let response: any;
     try {
-      if (action === "assign") {
+      if (action === "approve") {
         response = await axiosInstance.put(
           "/customer/appointments/approve",
           null,
@@ -218,6 +219,10 @@ const AppointmentList = () => {
                       <th className="px-3 py-2 text-center">Create Job Card</th>
                     </>
                   )}
+
+                  {userType === "customer" && (
+                    <th className="px-3 py-2">Assigned Mechanic</th>
+                  )}
                   <th className="px-3 py-2 text-center">Delete</th>
                 </tr>
               </thead>
@@ -299,7 +304,13 @@ const AppointmentList = () => {
 
                             <td className="px-3 py-2 text-center">
                               {appoitmemt?.aptMechanic
-                                ? `${appoitmemt?.mechanicTitle} ${appoitmemt?.mechanicFirstName} ${appoitmemt?.mechanicSurname}`
+                                ? `${
+                                    TITLE_OPTIONS.find(
+                                      (option) =>
+                                        option?.value ===
+                                        appoitmemt?.mechanicTitle,
+                                    )?.label ?? "-"
+                                  } ${appoitmemt?.mechanicFirstName} ${appoitmemt?.mechanicSurname}`
                                 : "-"}
                             </td>
 
@@ -369,7 +380,19 @@ const AppointmentList = () => {
                             )}
                           </>
                         )}
-
+                        {userType === "customer" && (
+                          <td className="px-3 py-2 text-center">
+                            {appoitmemt?.aptMechanic
+                              ? `${
+                                  TITLE_OPTIONS.find(
+                                    (option) =>
+                                      option?.value ===
+                                      appoitmemt?.mechanicTitle,
+                                  )?.label ?? "-"
+                                } ${appoitmemt?.mechanicFirstName} ${appoitmemt?.mechanicSurname}`
+                              : "-"}
+                          </td>
+                        )}
                         <td className="px-3 py-2 text-center">
                           <button
                             onClick={() => {

@@ -5,12 +5,12 @@ import VehicleAutoSelectField from "./VehicleAutoSelectField";
 type ConfirmAssignRejectModalProps = {
   open: boolean;
   onClose: () => void;
-  onConfirm: (action: "assign" | "reject") => void;
+  onConfirm: (action: "approve" | "reject") => void;
   appointmentData: any;
 };
 
-const ASSIGN_REJECT_OPTIONS = [
-  { label: "Assign", value: "assign" },
+const APPROVE_REJECT_OPTIONS = [
+  { label: "Approve", value: "approve" },
   { label: "Reject", value: "reject" },
 ];
 
@@ -24,9 +24,9 @@ const ConfirmAssignRejectModal = ({
   const getDefaultOption = (status?: string) => {
     switch (status) {
       case "APPROVED":
-        return ASSIGN_REJECT_OPTIONS[0]; // Assign
+        return APPROVE_REJECT_OPTIONS?.[0]; // Assign
       case "REJECTED":
-        return ASSIGN_REJECT_OPTIONS[1]; // Reject
+        return APPROVE_REJECT_OPTIONS?.[1]; // Reject
       case "PENDING":
       default:
         return null; // Assign (default)
@@ -35,7 +35,7 @@ const ConfirmAssignRejectModal = ({
 
   const defaultOption = getDefaultOption(appointmentData?.aptStatus);
 
-  const [action, setAction] = useState<"assign" | "reject">(
+  const [action, setAction] = useState<"Approve" | "reject">(
     defaultOption?.value,
   );
 
@@ -68,7 +68,7 @@ const ConfirmAssignRejectModal = ({
             label="Action"
             name="vehVehicleType"
             value={formik.values.vehVehicleType}
-            options={ASSIGN_REJECT_OPTIONS}
+            options={APPROVE_REJECT_OPTIONS}
             onChange={(val) => {
               formik.setFieldValue("vehVehicleType", val);
               setAction(val?.value);
