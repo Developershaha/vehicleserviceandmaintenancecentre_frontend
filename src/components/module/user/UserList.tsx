@@ -6,13 +6,21 @@ import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import { TITLE_OPTIONS } from "../../common/common";
+import CommonPagination from "../../common/CommonPagination";
 
-interface User {
-  useUsername?: string;
+export interface User {
+  useUsername: string;
   useTitle?: string;
-  useFirstName?: string;
-  useSurname?: string;
-  useLoggedIn?: number; // 0 | 1
+  useFirstName: string;
+  useSurname: string;
+  useLoggedIn: 0 | 1 | null;
+}
+export interface UserListResponse {
+  entity: {
+    userList: User[];
+    userListCount: number;
+  };
+  validationCode: string;
 }
 
 const UserList = () => {
@@ -23,29 +31,35 @@ const UserList = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
   /* =======================
      Fetch Users
      ======================= */
   const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get<{ entity?: User[] }>(
+      const response = await axiosInstance.get<UserListResponse>(
         "auth/user/list",
+        {
+          params: { pageNumber: page },
+        },
       );
 
-      setUsers(response?.data?.entity ?? []);
+      setUsers(response.data.entity.userList);
+      if (response.data.entity.userListCount)
+        setTotalCount(response.data.entity.userListCount);
     } catch (error) {
       console.error("Error fetching users", error);
       setUsers([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page]);
 
   /* =======================
      Delete User
@@ -201,6 +215,11 @@ const UserList = () => {
         onConfirm={handleDelete}
         user="Vehicle"
         message="Are you sure you want to delete this vehicle?"
+      />
+      <CommonPagination
+        totalCount={totalCount}
+        currentPage={page}
+        onPageChange={(newPage) => setPage(newPage)}
       />
     </div>
   );

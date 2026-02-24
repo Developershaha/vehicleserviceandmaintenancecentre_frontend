@@ -23,12 +23,12 @@ const VehicleList = () => {
     let response;
     try {
       setLoading(true);
-      if (userType === "customer") {
-        response = await axiosInstance.get("/customer/vehicles");
-      } else if (userType === "admin") {
+      if (userType === "admin") {
         response = await axiosInstance.get("/admin/vehicles", {
           params: { pageNumber: page },
         });
+      } else {
+        response = await axiosInstance.get("/customer/vehicles");
       }
 
       if (userType === "admin") {

@@ -61,7 +61,7 @@ axiosInstance.interceptors.request.use(
 
     if (!refreshToken) {
       store.dispatch(logout());
-      globalThis.location.replace("/cellmaUser/login");
+      globalThis.location.replace("/");
       return Promise.reject("No refresh token");
     }
 
@@ -73,7 +73,7 @@ axiosInstance.interceptors.request.use(
       cookies.remove("jwt", { path: "/" });
       cookies.remove("refreshToken", { path: "/" });
       store.dispatch(logout());
-      globalThis.location.replace("/cellmaUser/login");
+      globalThis.location.replace("/");
       return Promise.reject("Refresh token expired");
     }
 
@@ -155,31 +155,47 @@ axiosInstance.interceptors.request.use(
       requestQueue.forEach(({ reject }) => reject(error));
       requestQueue.length = 0;
       store.dispatch(logout());
-      globalThis.location.replace("/cellmaUser/login");
-      return Promise.reject(error);
+      globalThis.location.replace("/");
+      return Promise.resolve(error);
     } finally {
       isRefreshing = false;
     }
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.resolve(error),
 );
 
 /* ---------------------------------------------------- */
 /* -------------- RESPONSE INTERCEPTOR ---------------- */
 /* ---------------------------------------------------- */
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    const status = error?.response?.status;
+    const url = error?.config?.url;
+
+    // Refresh token failed → hard logout
+    if (status === 401 && url?.includes("/auth/refresh-token")) {
+      console.log("in if");
       store.dispatch(logout());
       globalThis.location.replace("/");
+      return Promise.reject(error);
+    }
+
+    // Any other unauthorized request
+    if (status === 401) {
+      store.dispatch(
+        showSnackbar({
+          message:
+            "You’re not authorized to access this data. Please log in again.",
+          type: "error",
+        }),
+      );
     }
 
     if (error.message === "Network Error") {
       store.dispatch(
         showSnackbar({
-          message: "Network error. Please try again.",
+          message: "Network error. Please check your connection.",
           type: "warning",
         }),
       );

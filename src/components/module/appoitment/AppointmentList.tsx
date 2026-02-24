@@ -8,11 +8,11 @@ import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import ConfirmAssignRejectModal from "../../common/ConfirmAssignRejectModal";
 import AssignMechanicModal from "../../common/AssignMechanicModal";
-/* ✅ MUI Icons */
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CommonPagination from "../../common/CommonPagination";
 import { TITLE_OPTIONS } from "../../common/common";
+
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -28,7 +28,11 @@ const AppointmentList = () => {
   const [showAssign, setShowAssign] = useState(false);
   const [appointmentData, setAppointmentData] = useState({});
   const [expandedAptId, setExpandedAptId] = useState<number | null>(null);
-
+  const STATUS_LABEL: Record<string, string> = {
+    PENDING: "Pending",
+    ASSIGNED: "Assigned",
+    REJECTED: "Rejected",
+  };
   const handleAssignReject = async (action: "approve" | "reject") => {
     if (!selectedAptId) return;
     let response: any;
@@ -262,10 +266,9 @@ const AppointmentList = () => {
                           {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
                         </td>
 
-                        <td className="px-3 py-2">
-                          <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                            {appoitmemt?.aptStatus}
-                          </span>
+                        <td className="px-3 py-2 text-center">
+                          {STATUS_LABEL[appoitmemt?.aptStatus] ??
+                            appoitmemt?.aptStatus}
                         </td>
 
                         <td className="px-3 py-2 text-gray-600">
@@ -338,6 +341,17 @@ const AppointmentList = () => {
                                 <button
                                   onClick={async () => {
                                     if (!appoitmemt?.aptId) return;
+
+                                    if (!appoitmemt?.aptMechanic) {
+                                      dispatch(
+                                        showSnackbar({
+                                          message:
+                                            "Please assign a mechanic before proceeding",
+                                          type: "warning",
+                                        }),
+                                      );
+                                      return;
+                                    }
                                     setJobCardCreatedId(appoitmemt?.aptId);
                                     const response = await axiosInstance.post(
                                       "admin/job-cards",
