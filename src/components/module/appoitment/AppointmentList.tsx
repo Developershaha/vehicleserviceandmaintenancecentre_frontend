@@ -121,7 +121,9 @@ const AppointmentList = () => {
       if (userType === "customer") {
         responseAppoitment = await axiosInstance.get("/customer/appointments");
       } else if (userType === "mechanic") {
-        responseMechanical = await axiosInstance.get("/mechanic/appointments");
+        responseMechanical = await axiosInstance.get("/mechanic/appointments", {
+          params: { pageNumber: page },
+        });
       } else if (userType === "admin") {
         responseAdmin = await axiosInstance.get("/admin/appointments/list", {
           params: { pageNumber: page },
@@ -132,7 +134,7 @@ const AppointmentList = () => {
         responseAppoitment?.data?.entity ||
         responseMechanical?.data?.entity ||
         responseAdmin?.data?.entity;
-      if (userType === "admin") {
+      if (userType === "admin" || userType === "mechanic") {
         setAppoitmentList(entity?.appointmentList || []);
         if (entity?.appointmentCount) {
           setTotalCount(entity?.appointmentCount);

@@ -116,9 +116,8 @@ const UserList = () => {
                   <th className="px-3 py-2 text-left">Title</th>
                   <th className="px-3 py-2 text-left">First Name</th>
                   <th className="px-3 py-2 text-left">Last Name</th>
-                  <th className="px-3 py-2 text-center">Logged In</th>
+                  <th className="px-3 py-2 text-center">Active/Deactive</th>
                   <th className="px-3 py-2 text-center">Edit</th>
-                  <th className="px-3 py-2 text-center">Delete</th>
                 </tr>
               </thead>
 
@@ -161,31 +160,16 @@ const UserList = () => {
                       {/* Edit */}
                       <td className="px-3 py-2 text-center">
                         <button
-                          onClick={() =>
+                          onClick={() => {
                             navigate("/users/add", {
                               state: { user },
-                            })
-                          }
+                            });
+                          }}
                           className="rounded-md bg-blue-50 px-4 py-1.5
                           text-sm text-blue-600 border border-blue-200
                           hover:bg-blue-100"
                         >
                           Edit
-                        </button>
-                      </td>
-
-                      {/* Delete */}
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowDeleteModal(true);
-                          }}
-                          className="rounded-md bg-red-50 px-4 py-1.5
-                          text-sm text-red-600 border border-red-200
-                          hover:bg-red-100"
-                        >
-                          Delete
                         </button>
                       </td>
                     </tr>
@@ -203,24 +187,12 @@ const UserList = () => {
             </table>
           </div>
         </div>
+        <CommonPagination
+          totalCount={totalCount}
+          currentPage={page}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </div>
-
-      {/* Delete Modal */}
-      <ConfirmDeleteModal
-        open={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedUser(null);
-        }}
-        onConfirm={handleDelete}
-        user="Vehicle"
-        message="Are you sure you want to delete this vehicle?"
-      />
-      <CommonPagination
-        totalCount={totalCount}
-        currentPage={page}
-        onPageChange={(newPage) => setPage(newPage)}
-      />
     </div>
   );
 };

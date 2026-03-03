@@ -1,9 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import VehicleButton from "../../common/VehicleButton";
 import VehicleInput from "../../common/VehicleInput";
 import { useFormik } from "formik";
+
 import { object, ref, string } from "yup";
 import { useEffect, useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
@@ -15,7 +16,7 @@ import { TITLE_OPTIONS } from "../../common/common";
 import { checkUsernameDuplicateApi } from "../../module/hooks/useVehicle";
 import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
 import { registerApi } from "../../auth/pages/apis/loginApi";
-import { authStyles } from "../../auth/pages/authStyles";
+import axiosInstance from "../../auth/pages/apis/axiosInstance";
 
 /* =======================
    USER TYPE ENUM OPTIONS
@@ -33,6 +34,8 @@ const AddUser = () => {
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [isConfirmPassword, setIsConfirmPassword] = useState(true);
   const [usernameError, setUsernameError] = useState<string | undefined>();
+  const { state } = useLocation();
+  const { user } = state ?? {};
 
   const formik = useFormik<{
     firstName: string;
@@ -80,7 +83,7 @@ const AddUser = () => {
     onSubmit: async (values) => {
       try {
         const payload = {
-          useUsername: values.username,
+          useUsername: values?.username,
           useTitle: values.gender?.value,
           useFirstName: values.firstName,
           useSurname: values.lastName,
@@ -114,6 +117,41 @@ const AddUser = () => {
 
   /* ---------------- Username duplicate check ---------------- */
   const debouncedUsername = useDebouncedValue(formik.values.username, 500);
+
+  const fetchUserDetails = async () => {
+    if (!user?.useUsername) return; // ⛔ important
+
+    try {
+      const response = await axiosInstance.get("auth/user", {
+        params: { useUsername: user.useUsername },
+      });
+
+      const entity = response.data.entity;
+
+      // 🔑 THIS IS THE KEY PART
+      formik.setValues({
+        firstName: entity.useFirstName ?? "",
+        lastName: entity.useSurname ?? "",
+        username: entity.useUsername ?? "",
+        mobile: entity.useMobile ?? "",
+        email: entity.useEmail ?? "",
+        password: "",
+        confirmPassword: "",
+        gender: TITLE_OPTIONS.find((t) => t.value === entity.useTitle) ?? null,
+        userType:
+          USER_TYPE_OPTIONS.find((t) => t.value === entity.useType) ?? null,
+      });
+    } catch (error) {
+      console.error("Failed to load user details", error);
+    }
+  };
+
+  console.log("user", !!user);
+  useEffect(() => {
+    if (user?.useUsername) {
+      fetchUserDetails();
+    }
+  }, [user?.useUsername]);
 
   useEffect(() => {
     if (!debouncedUsername || debouncedUsername.length < 4) {
@@ -251,47 +289,49 @@ const AddUser = () => {
             />
 
             {/* Passwords */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <VehicleInput
-                label="Password"
-                name="password"
-                type={isShowPassword ? "password" : "text"}
-                required
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.password}
-                touched={formik.touched.password}
-                endIcon={
-                  isShowPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )
-                }
-                onEndIconClick={() => setIsShowPassword((p) => !p)}
-              />
+            {!user && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <VehicleInput
+                  label="Password"
+                  name="password"
+                  type={isShowPassword ? "password" : "text"}
+                  required
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.errors.password}
+                  touched={formik.touched.password}
+                  endIcon={
+                    isShowPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )
+                  }
+                  onEndIconClick={() => setIsShowPassword((p) => !p)}
+                />
 
-              <VehicleInput
-                label="Confirm Password"
-                name="confirmPassword"
-                type={isConfirmPassword ? "password" : "text"}
-                required
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.confirmPassword}
-                touched={formik.touched.confirmPassword}
-                endIcon={
-                  isConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )
-                }
-                onEndIconClick={() => setIsConfirmPassword((p) => !p)}
-              />
-            </div>
+                <VehicleInput
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type={isConfirmPassword ? "password" : "text"}
+                  required
+                  value={formik.values.confirmPassword}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.errors.confirmPassword}
+                  touched={formik.touched.confirmPassword}
+                  endIcon={
+                    isConfirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )
+                  }
+                  onEndIconClick={() => setIsConfirmPassword((p) => !p)}
+                />
+              </div>
+            )}
 
             <div className="pt-2">
               <VehicleButton text="Add User" type="submit" align="center" />
