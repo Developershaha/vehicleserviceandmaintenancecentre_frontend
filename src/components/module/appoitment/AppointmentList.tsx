@@ -268,7 +268,7 @@ const AppointmentList = () => {
                           {dayjs(appoitmemt?.aptDate).format("DD/MM/YYYY")}
                         </td>
 
-                        <td className="px-3 py-2 text-center">
+                        <td className="px-3 py-2 ">
                           {STATUS_LABEL[appoitmemt?.aptStatus] ??
                             appoitmemt?.aptStatus}
                         </td>

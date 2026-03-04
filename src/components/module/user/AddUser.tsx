@@ -26,7 +26,10 @@ const USER_TYPE_OPTIONS: AutoSelectOption[] = [
   { label: "Mechanic", value: "mechanic" },
   { label: "Admin", value: "admin" },
 ];
-
+const USER_STATUS_OPTIONS: AutoSelectOption[] = [
+  { label: "Active", value: 1 },
+  { label: "Inactive", value: 0 },
+];
 const AddUser = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -36,7 +39,7 @@ const AddUser = () => {
   const [usernameError, setUsernameError] = useState<string | undefined>();
   const { state } = useLocation();
   const { user } = state ?? {};
-
+  const isEditMode = !!user;
   const formik = useFormik<{
     firstName: string;
     lastName: string;
@@ -47,6 +50,7 @@ const AddUser = () => {
     confirmPassword: string;
     gender: AutoSelectOption | null;
     userType: AutoSelectOption | null;
+    isActive: AutoSelectOption | null;
   }>({
     initialValues: {
       firstName: "",
@@ -58,6 +62,7 @@ const AddUser = () => {
       confirmPassword: "",
       gender: null,
       userType: null,
+      isActive: null,
     },
 
     validationSchema: object({
@@ -68,10 +73,21 @@ const AddUser = () => {
         .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
         .required("Mobile number required"),
       email: string().email("Invalid email").required("Email required"),
-      password: string().min(8).required("Password required"),
-      confirmPassword: string()
-        .oneOf([ref("password")], "Passwords do not match")
-        .required("Confirm password required"),
+      isActive: isEditMode
+        ? object().nullable().required("User status required")
+        : object().nullable().notRequired(),
+      password: isEditMode
+        ? string().notRequired()
+        : string()
+            .min(6, "Password must be at least 6 characters")
+            .required("Password required"),
+
+      confirmPassword: isEditMode
+        ? string().notRequired()
+        : string()
+            .oneOf([ref("password")], "Passwords do not match")
+            .required("Confirm password required"),
+
       userType: object().nullable().required("User type required"),
     }),
 
@@ -146,7 +162,6 @@ const AddUser = () => {
     }
   };
 
-  console.log("user", !!user);
   useEffect(() => {
     if (user?.useUsername) {
       fetchUserDetails();
@@ -190,9 +205,13 @@ const AddUser = () => {
         <div className="relative w-full max-w-xl rounded-xl bg-white p-8 shadow-md hover:shadow-lg transition">
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-xl font-semibold text-gray-800">Create User</h1>
+            <h1 className="text-xl font-semibold text-gray-800">
+              {isEditMode ? "Update User" : "Create User"}
+            </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Create user to access Vehicle Service Centre
+              {isEditMode
+                ? "Update User – Vehicle Service Centre"
+                : "Create New User – Vehicle Service Centre"}{" "}
             </p>
           </div>
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
@@ -287,9 +306,24 @@ const AddUser = () => {
               }
               touched={formik.touched.userType}
             />
+            {isEditMode && (
+              <VehicleAutoSelectField
+                label="User Status"
+                name="isActive"
+                required
+                value={formik.values.isActive}
+                options={USER_STATUS_OPTIONS}
+                onChange={(val) => formik.setFieldValue("isActive", val)}
+                onBlur={() => formik.setFieldTouched("isActive", true)}
+                error={
+                  formik.touched.isActive ? formik.errors.isActive : undefined
+                }
+                touched={formik.touched.isActive}
+              />
+            )}
 
             {/* Passwords */}
-            {!user && (
+            {!isEditMode && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <VehicleInput
                   label="Password"

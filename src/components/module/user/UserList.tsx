@@ -62,32 +62,6 @@ const UserList = () => {
   }, [page]);
 
   /* =======================
-     Delete User
-     ======================= */
-  const handleDelete = async (): Promise<void> => {
-    if (!selectedUser?.useUsername) return;
-
-    try {
-      // 🔴 Replace with actual delete user API
-      // await deleteUserApi(selectedUser.useUsername);
-
-      dispatch(
-        showSnackbar({
-          message: "User deleted successfully",
-          type: "success",
-        }),
-      );
-
-      fetchUsers();
-    } catch (error) {
-      console.error("Error deleting user", error);
-    } finally {
-      setShowDeleteModal(false);
-      setSelectedUser(null);
-    }
-  };
-
-  /* =======================
      Helper
      ======================= */
   const capitalizeFirstLetter = (value?: string): string =>
