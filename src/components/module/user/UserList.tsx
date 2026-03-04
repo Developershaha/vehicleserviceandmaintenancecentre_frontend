@@ -128,9 +128,18 @@ const UserList = () => {
                         {capitalizeFirstLetter(user?.useSurname)}
                       </td>
                       <td className="px-3 py-2 text-center">
-                        {user?.useLoggedIn === 1 ? "Yes" : "No"}
+                        {user?.useLoggedIn === 1 ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 border border-green-300">
+                            <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                            Online
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700 border border-red-300">
+                            <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                            Offline
+                          </span>
+                        )}
                       </td>
-
                       {/* Edit */}
                       <td className="px-3 py-2 text-center">
                         <button

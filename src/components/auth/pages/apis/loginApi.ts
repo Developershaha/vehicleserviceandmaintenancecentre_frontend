@@ -27,3 +27,6 @@ export interface RegisterApiPayload {
 export const registerApi = (payload: RegisterApiPayload) => {
   return axios.post(`${BASE_URL}auth/register`, payload);
 };
+export const updateUser = (payload: RegisterApiPayload) => {
+  return axiosInstance.put("auth/user", payload);
+};

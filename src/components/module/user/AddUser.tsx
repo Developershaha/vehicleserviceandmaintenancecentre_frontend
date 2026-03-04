@@ -15,7 +15,7 @@ import VehicleAutoSelectField, {
 import { TITLE_OPTIONS } from "../../common/common";
 import { checkUsernameDuplicateApi } from "../../module/hooks/useVehicle";
 import { useDebouncedValue } from "../../module/hooks/useDebouncedValue";
-import { registerApi } from "../../auth/pages/apis/loginApi";
+import { registerApi, updateUser } from "../../auth/pages/apis/loginApi";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 
 /* =======================
@@ -106,18 +106,29 @@ const AddUser = () => {
           useEmail: values.email,
           useMobile: values.mobile,
           usePassword: values.password,
-          useActive: 1,
+          useActive: isEditMode ? values?.isActive?.value : 1,
           useType: values.userType?.value,
         };
 
-        await registerApi(payload);
+        console.log("pau", payload);
+        if (isEditMode) {
+          await updateUser(payload);
+          dispatch(
+            showSnackbar({
+              message: "User updated successfully",
+              type: "success",
+            }),
+          );
+        } else {
+          await registerApi(payload);
 
-        dispatch(
-          showSnackbar({
-            message: "User created successfully",
-            type: "success",
-          }),
-        );
+          dispatch(
+            showSnackbar({
+              message: "User created successfully",
+              type: "success",
+            }),
+          );
+        }
 
         navigate("/users");
       } catch {
@@ -144,6 +155,13 @@ const AddUser = () => {
 
       const entity = response.data.entity;
 
+      console.log(
+        "first",
+        USER_STATUS_OPTIONS.find((s) => s.value === entity.useActive) ?? {
+          label: "Active",
+          value: 1,
+        },
+      );
       // 🔑 THIS IS THE KEY PART
       formik.setValues({
         firstName: entity.useFirstName ?? "",
@@ -151,8 +169,9 @@ const AddUser = () => {
         username: entity.useUsername ?? "",
         mobile: entity.useMobile ?? "",
         email: entity.useEmail ?? "",
-        password: "",
-        confirmPassword: "",
+        isActive: USER_STATUS_OPTIONS.find(
+          (s) => s.value === entity.useActive,
+        ) ?? { label: "Active", value: 1 },
         gender: TITLE_OPTIONS.find((t) => t.value === entity.useTitle) ?? null,
         userType:
           USER_TYPE_OPTIONS.find((t) => t.value === entity.useType) ?? null,
@@ -368,7 +387,11 @@ const AddUser = () => {
             )}
 
             <div className="pt-2">
-              <VehicleButton text="Add User" type="submit" align="center" />
+              <VehicleButton
+                text={isEditMode ? "Update User" : "Add User"}
+                type="submit"
+                align="center"
+              />{" "}
             </div>
           </form>
         </div>
