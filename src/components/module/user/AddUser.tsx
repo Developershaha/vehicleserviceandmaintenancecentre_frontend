@@ -110,7 +110,6 @@ const AddUser = () => {
           useType: values.userType?.value,
         };
 
-        console.log("pau", payload);
         if (isEditMode) {
           await updateUser(payload);
           dispatch(
@@ -155,13 +154,6 @@ const AddUser = () => {
 
       const entity = response.data.entity;
 
-      console.log(
-        "first",
-        USER_STATUS_OPTIONS.find((s) => s.value === entity.useActive) ?? {
-          label: "Active",
-          value: 1,
-        },
-      );
       // 🔑 THIS IS THE KEY PART
       formik.setValues({
         firstName: entity.useFirstName ?? "",
@@ -208,7 +200,7 @@ const AddUser = () => {
       }
     };
 
-    checkDuplicate();
+    if (!isEditMode) checkDuplicate();
     return () => {
       cancelled = true;
     };
@@ -253,6 +245,7 @@ const AddUser = () => {
                 name="username"
                 required
                 value={formik.values.username}
+                disabled={isEditMode}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 error={formik.errors.username}

@@ -5,6 +5,7 @@ interface VehicleInputProps {
   type?: string;
   required?: boolean;
   error?: string;
+  disabled?: boolean;
   touched?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -21,6 +22,7 @@ const VehicleInput = ({
   required = false,
   error,
   touched,
+  disabled = false,
   onChange,
   onBlur,
   endIcon,
@@ -28,7 +30,6 @@ const VehicleInput = ({
 }: VehicleInputProps) => {
   const showError = Boolean(error && touched);
   const hasValue = value && value.length > 0;
-
   return (
     <div className="relative mb-6">
       <input
@@ -38,16 +39,18 @@ const VehicleInput = ({
         type={type}
         onChange={onChange}
         onBlur={onBlur}
+        disabled={disabled}
         className={`
-          peer w-full h-12 rounded-md border px-4 pt-5 pb-3
-          text-sm outline-none
-          ${endIcon ? "pr-10" : ""}
-          ${
-            showError
-              ? "border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-          }
-        `}
+    peer w-full h-12 rounded-md border px-4 pt-5 pb-3
+    text-sm outline-none
+    ${endIcon ? "pr-10" : ""}
+    ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}
+    ${
+      showError
+        ? "border-red-500 focus:ring-2 focus:ring-red-200"
+        : "border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
+    }
+  `}
       />
 
       {/* Floating Label */}

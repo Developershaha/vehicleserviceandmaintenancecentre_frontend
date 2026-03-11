@@ -32,6 +32,7 @@ const AppointmentList = () => {
     PENDING: "Pending",
     ASSIGNED: "Assigned",
     REJECTED: "Rejected",
+    APPROVED: "Approved",
   };
   const handleAssignReject = async (action: "approve" | "reject") => {
     if (!selectedAptId) return;
@@ -159,7 +160,6 @@ const AppointmentList = () => {
           aptId: selectedAptId,
         },
       });
-      console.log("response", response?.data?.validationCode);
 
       if (response?.data?.validationCode === "appointment.delete.success") {
         dispatch(

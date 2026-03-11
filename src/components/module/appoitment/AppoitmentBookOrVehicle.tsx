@@ -15,11 +15,15 @@ const AppoitmentBookOrVehicle = () => {
     let responseVehicle;
     try {
       setLoading(true);
-      if (userType === "customer") {
+
+      if (userType === "admin") {
+        responseVehicle = await axiosInstance.get("/admin/vehicles", {
+          params: { pageNumber: 1 },
+        });
+      } else {
         responseVehicle = await axiosInstance.get("/customer/vehicles");
-      } else if (userType === "admin") {
-        responseVehicle = await axiosInstance.get("/admin/vehicles");
       }
+
       if (userType === "admin") {
         setVehicles(responseVehicle?.data?.entity?.finalVehicleList || []);
       } else {
