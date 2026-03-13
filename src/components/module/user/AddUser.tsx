@@ -79,7 +79,7 @@ const AddUser = () => {
       password: isEditMode
         ? string().notRequired()
         : string()
-            .min(6, "Password must be at least 6 characters")
+            .min(8, "Password must be at least 8 characters")
             .required("Password required"),
 
       confirmPassword: isEditMode
