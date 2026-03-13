@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hook";
 import { showSnackbar } from "../store/snackbarSlice";
 import { logout } from "../store/authSlice";
@@ -6,24 +6,32 @@ import { logoutApi } from "./auth/pages/apis/loginApi";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // To handle active link states
   const dispatch = useAppDispatch();
-  const userDetails = useAppSelector((state) => state.auth);
-  const username = userDetails?.username;
-  const { userType } = useAppSelector((state) => state.auth);
-  const handleLogout = async () => {
-    const logoutResponse = await logoutApi(userDetails?.username ?? "");
 
-    if (logoutResponse?.data?.validationCode === "logout.success") {
-      dispatch(logout());
-      dispatch(
-        showSnackbar({
-          message: "You have been logged out successfully.",
-          type: "success",
-        }),
-      );
-      navigate("/");
+  const { username, userType } = useAppSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      const logoutResponse = await logoutApi(username ?? "");
+
+      if (logoutResponse?.data?.validationCode === "logout.success") {
+        dispatch(logout());
+        dispatch(
+          showSnackbar({
+            message: "You have been logged out successfully.",
+            type: "success",
+          }),
+        );
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Logout failed", error);
     }
   };
+
+  // Helper to check if a link is active
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav
@@ -73,30 +81,69 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* RIGHT: Nav + Logout */}
-      <div className="flex items-center space-x-6 text-slate-900">
-        <Link
-          to="/dashboard"
-          className="font-medium hover:text-indigo-600 transition"
-        >
-          Home
-        </Link>
-        <Link
-          to="/services"
-          className="font-medium hover:text-indigo-600 transition"
-        >
-          Services
-        </Link>
+      {/* RIGHT: Nav Links + Logout */}
+      <div className="flex items-center space-x-8">
+        {/* Navigation Group */}
+        <div className="flex items-center space-x-6">
+          <Link
+            to="/dashboard"
+            className={`relative group py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+              isActive("/dashboard")
+                ? "text-indigo-600"
+                : "text-slate-500 hover:text-indigo-600"
+            }`}
+          >
+            Home
+            <span
+              className={`absolute bottom-0 left-0 h-0.5 bg-indigo-600 transition-all duration-300 ${
+                isActive("/dashboard") ? "w-full" : "w-0 group-hover:w-full"
+              }`}
+            ></span>
+          </Link>
 
+          <Link
+            to="/services"
+            className={`relative group py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+              isActive("/services")
+                ? "text-indigo-600"
+                : "text-slate-500 hover:text-indigo-600"
+            }`}
+          >
+            Services
+            <span
+              className={`absolute bottom-0 left-0 h-0.5 bg-indigo-600 transition-all duration-300 ${
+                isActive("/services") ? "w-full" : "w-0 group-hover:w-full"
+              }`}
+            ></span>
+          </Link>
+        </div>
+
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
           className="
-            rounded-lg px-4 py-1.5 text-sm font-semibold
-            bg-red-500 hover:bg-red-600 text-white
-            transition-all shadow-md active:scale-95
+            group flex items-center gap-2
+            rounded-full px-5 py-2 text-xs font-bold uppercase tracking-widest
+            bg-rose-50 text-rose-600 border border-rose-100
+            hover:bg-rose-600 hover:text-white hover:border-rose-600
+            transition-all duration-300 shadow-sm hover:shadow-rose-200
+            active:scale-95
           "
         >
-          Logout
+          <span>Logout</span>
+          <svg
+            className="w-4 h-4 transition-transform group-hover:translate-x-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
         </button>
       </div>
     </nav>
