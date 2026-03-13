@@ -54,7 +54,7 @@ const Navbar = () => {
         {/* Divider */}
         <div className="h-8 w-px bg-slate-300 hidden sm:block" />
 
-        {/* User Info */}
+        {/* User Info Container */}
         <div className="hidden sm:flex items-center gap-3 rounded-lg bg-white/70 px-3 py-1.5 border border-slate-200 shadow-sm">
           {/* Avatar */}
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white text-sm font-bold uppercase">
@@ -62,10 +62,12 @@ const Navbar = () => {
           </div>
 
           {/* Text */}
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold text-slate-900">{username}</span>
-            <span className="text-[10px]  tracking-widest text-slate-500 font-semibold">
-              Logged in as {userType}
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-semibold text-slate-700 leading-tight">
+              {username}
+            </span>
+            <span className="text-[10px] font-medium text-slate-400 capitalize">
+              {userType} account
             </span>
           </div>
         </div>
