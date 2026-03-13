@@ -12,6 +12,7 @@ import AppointmentList from "../components/module/appoitment/AppointmentList";
 import AppoitmentBookOrVehicle from "../components/module/appoitment/AppoitmentBookOrVehicle";
 import UserList from "../components/module/user/UserList";
 import AddUser from "../components/module/user/AddUser";
+import UpdateJobCard from "../components/common/UpdateJobCard";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,10 @@ const AppRoutes = () => {
         <Route
           path="/appointments/checkVehicles"
           element={<AppoitmentBookOrVehicle />}
+        />
+        <Route
+          path="/appointments/updatejobcard"
+          element={<UpdateJobCard />}
         />
         <Route path="/appointments/add" element={<AddVehicle />} />
         {/* 👤 User Module */}

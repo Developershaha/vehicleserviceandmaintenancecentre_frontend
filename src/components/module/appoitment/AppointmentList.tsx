@@ -12,7 +12,6 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CommonPagination from "../../common/CommonPagination";
 import { TITLE_OPTIONS } from "../../common/common";
-
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -229,6 +228,9 @@ const AppointmentList = () => {
                   {userType === "customer" && (
                     <th className="px-3 py-2">Assigned Mechanic</th>
                   )}
+                  {userType === "mechanic" && (
+                    <th className="px-3 py-2 text-center">Update Job Card</th>
+                  )}
                   <th className="px-3 py-2 text-center">Delete</th>
                 </tr>
               </thead>
@@ -409,6 +411,29 @@ const AppointmentList = () => {
                               : "-"}
                           </td>
                         )}
+                        {userType === "mechanic" && (
+                          <td className="px-3 py-2 text-center">
+                            <div className="flex items-center justify-center">
+                              <button
+                                title="Edit Job Card"
+                                onClick={() =>
+                                  navigate("/appointments/updatejobcard", {
+                                    state: appoitmemt?.aptId,
+                                  })
+                                }
+                                className="p-2 rounded-md hover:bg-green-100 transition"
+                              >
+                                <svg
+                                  className="w-5 h-5 text-green-600"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <path d="M3 17.25V21h3.75l11-11.03-3.75-3.75L3 17.25zm17.71-10.04a1.003 1.003 0 000-1.42l-2.5-2.5a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.99-1.66z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        )}
                         <td className="px-3 py-2 text-center">
                           <button
                             onClick={() => {
@@ -474,6 +499,7 @@ const AppointmentList = () => {
         }}
         onConfirm={handleDeleteAppointment}
       />
+
       <ConfirmAssignRejectModal
         open={showAssignRejectModal}
         onClose={() => {
