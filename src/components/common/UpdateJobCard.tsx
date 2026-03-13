@@ -1,41 +1,78 @@
 import { useFormik } from "formik";
 import axiosInstance from "../auth/pages/apis/axiosInstance";
-import VehicleInput from "./VehicleInput";
 import VehicleButton from "./VehicleButton";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../store/hook";
 import { showSnackbar } from "../../store/snackbarSlice";
 import { useEffect, useState } from "react";
 import VehicleTextarea from "./VehicleTextarea";
-import VehicleAutoSelectField from "./VehicleAutoSelectField";
-import { mixed, object, string } from "yup";
+import VehicleAutoSelectField, {
+  type AutoSelectOption,
+} from "./VehicleAutoSelectField";
+import * as Yup from "yup";
+
+// --- TypeScript Interfaces ---
+interface JobCardEntity {
+  jcAptId: number;
+  jcCreated: string;
+  jcCreatedBy: string;
+  jcId: number;
+  jcInspectionNotes: string | null;
+  jcProgressPercentage: number;
+  jcRecordStatus: string;
+  jcRemarks: string | null;
+  jcStatus: string;
+  jcUpdated: string;
+  jcUpdatedBy: string | null;
+  jcWorkDone: string | null;
+}
+
+interface FormValues {
+  jcStatus: AutoSelectOption | null;
+  jcInspectionNotes: string;
+}
+
+const STATUS_OPTIONS = [
+  { label: "Inspection", value: "INSPECTION" },
+  { label: "In Progress", value: "IN_PROGRESS" },
+  { label: "Quality Check", value: "QUALITY_CHECK" },
+  { label: "Ready for Delivery", value: "READY_FOR_DELIVERY" },
+  { label: "Delivered", value: "DELIVERED" },
+];
 
 const UpdateJobCard = () => {
   const [loading, setLoading] = useState(false);
-  const [jobCard, setJobCard] = useState<any>(null);
+  const [jobCard, setJobCard] = useState<JobCardEntity | null>(null);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { state: appointmentId } = useLocation();
 
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       jcStatus: null,
       jcInspectionNotes: "",
     },
-
     enableReinitialize: true,
-    validationSchema: object({
-      jcStatus: mixed().required("Vehicle type required"),
+    validationSchema: Yup.object({
+      jcStatus: Yup.mixed().required("Status is required"),
 
-      jcInspectionNotes: string().required("Brand required"),
+      jcInspectionNotes: Yup.string().when("jcStatus", {
+        is: (status: AutoSelectOption | null) =>
+          ["IN_PROGRESS", "INSPECTION"].includes(status?.value || ""),
+        then: (schema) =>
+          schema.required(
+            "Inspection notes are required when in progress or inspection",
+          ),
+        otherwise: (schema) => schema.notRequired().nullable(),
+      }),
     }),
-
     onSubmit: async (values) => {
       try {
         await axiosInstance.put("/admin/job-cards", null, {
           params: {
-            jcStatus: values.jcStatus,
+            jcId: jobCard?.jcId,
+            jcStatus: values.jcStatus?.value,
             jcInspectionNotes: values.jcInspectionNotes,
           },
         });
@@ -46,7 +83,6 @@ const UpdateJobCard = () => {
             type: "success",
           }),
         );
-
         navigate("/appointments");
       } catch (error) {
         dispatch(
@@ -62,18 +98,21 @@ const UpdateJobCard = () => {
   const getJobCardDetails = async () => {
     try {
       setLoading(true);
-
       const response = await axiosInstance.get("/job-cards", {
         params: { aptId: appointmentId },
       });
 
-      const data = response?.data?.entity;
-
+      const data: JobCardEntity = response?.data?.entity;
       setJobCard(data);
 
       formik.setValues({
-        jcStatus: data?.jcStatus || "",
-        jcInspectionNotes: data?.jcInspectionNotes || "",
+        jcStatus:
+          STATUS_OPTIONS?.find((item) => item?.value === data?.jcStatus) ||
+          null,
+        jcInspectionNotes:
+          (data?.jcStatus === "IN_PROGRESS"
+            ? data?.jcWorkDone
+            : data?.jcInspectionNotes) ?? "",
       });
     } catch (error) {
       console.error("Error fetching job card", error);
@@ -86,132 +125,108 @@ const UpdateJobCard = () => {
     if (appointmentId) {
       getJobCardDetails();
     }
-  }, []);
+  }, [appointmentId]);
 
   return (
     <>
-      {/* Back Button */}
       <div className="mb-4 flex items-center">
         <VehicleButton text="Back" onClick={() => navigate("/appointments")} />
       </div>
 
       <div className="flex justify-center px-4 py-10">
         <div className="w-full max-w-xl rounded-xl bg-white p-8 shadow-md">
-          {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-xl font-semibold text-gray-800">
               Update Job Card
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Update job card status and inspection notes
+            <p className="mt-1 text-sm text-gray-500">
+              Update job card status and notes
             </p>
           </div>
 
-          {/* Job Card Details */}
+          {/* Job Card Details Display */}
           {jobCard && (
             <div className="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-              {/* Header with Record Status */}
               <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-5 py-3">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Job Card Reference: #{jobCard.jcId}
+                <h2 className="text-xs font-bold  tracking-widest text-slate-500">
+                  Job Card Created by: {jobCard.jcCreatedBy}
                 </h2>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                    jobCard.jcRecordStatus === "approved"
+                    jobCard?.jcRecordStatus === "approved"
                       ? "bg-emerald-100 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                       : "bg-amber-100 text-amber-700"
                   }`}
                 >
-                  {jobCard.jcRecordStatus}
+                  {jobCard?.jcRecordStatus}
                 </span>
               </div>
 
               <div className="p-5">
-                {/* Primary Details Grid */}
-                <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
-                  {/* Appointment Link */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                      Appointment
-                    </span>
-                    <span className="text-sm font-bold text-slate-700">
-                      #{jobCard.jcAptId}
-                    </span>
-                  </div>
-
-                  {/* Assigned To/Created By */}
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                      Technician
-                    </span>
-                    <span className="text-sm font-medium text-slate-700">
-                      {jobCard.jcCreatedBy}
-                    </span>
-                  </div>
-
-                  {/* Created Date */}
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase">
-                      Date Created
+                    <span className="text-[10px] font-semibold text-slate-400 ">
+                      Created at
                     </span>
                     <span className="text-sm text-slate-600">
-                      {new Date(jobCard.jcCreated).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(jobCard.jcCreated).toLocaleDateString(
+                        "en-GB",
+                      ) || "-"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-semibold text-slate-400 ">
+                      Updated By
+                    </span>
+                    <span className="text-sm font-medium text-slate-700">
+                      {jobCard.jcUpdatedBy || "-"}
+                    </span>
+                  </div>{" "}
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-semibold text-slate-400 ">
+                      Updated at
+                    </span>
+                    <span className="text-sm font-medium text-slate-700">
+                      {new Date(jobCard?.jcUpdated).toLocaleDateString(
+                        "en-GB",
+                      ) || "-"}
                     </span>
                   </div>
                 </div>
 
-                <hr className="my-5 border-slate-100" />
-
-                {/* Progress and Status Row */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-500">
-                        Current Phase:
-                      </span>
-                      <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                        {jobCard.jcStatus}
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-blue-600">
-                      {jobCard.jcProgressPercentage}% Complete
+                <div className="mt-6 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-slate-500">
+                      Current Phase:{" "}
+                      {
+                        STATUS_OPTIONS?.find(
+                          (item) => item?.value === jobCard?.jcStatus,
+                        )?.label
+                      }
+                    </span>
+                    <span className="font-bold text-blue-600">
+                      {jobCard?.jcProgressPercentage} %
                     </span>
                   </div>
-
-                  {/* Progress Bar */}
-                  <div className="relative h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-2 w-full rounded-full bg-slate-100">
                     <div
-                      className="h-full rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all duration-700 ease-out"
-                      style={{ width: `${jobCard.jcProgressPercentage}%` }}
+                      className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                      style={{ width: `${jobCard?.jcProgressPercentage}%` }}
                     />
                   </div>
                 </div>
-
-                {/* Quick Info Footer */}
-                {jobCard.jcUpdated && (
-                  <div className="mt-4 text-right">
-                    <p className="text-[10px] italic text-slate-400">
-                      Last updated:{" "}
-                      {new Date(jobCard.jcUpdated).toLocaleString()}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={formik.handleSubmit} className="space-y-5">
             <VehicleAutoSelectField
-              label="Job Card Status"
+              label="Update Status"
               name="jcStatus"
               value={formik.values.jcStatus}
-              options={[]}
-              onChange={(val) => formik.setFieldValue("vehVehicleType", val)}
+              options={STATUS_OPTIONS ?? []}
+              onChange={(val) => formik.setFieldValue("jcStatus", val)}
               onBlur={formik.handleBlur}
               clearable
               required
@@ -222,9 +237,15 @@ const UpdateJobCard = () => {
               }
               touched={formik.touched.jcStatus}
             />
+
             <VehicleTextarea
               label="Job Inspection Notes"
               name="jcInspectionNotes"
+              disabled={
+                !["IN_PROGRESS", "INSPECTION"].includes(
+                  formik.values.jcStatus?.value || "",
+                )
+              }
               value={formik.values.jcInspectionNotes}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -232,11 +253,13 @@ const UpdateJobCard = () => {
               touched={formik.touched.jcInspectionNotes}
               required
             />
-            <div className="mt-6">
+
+            <div className="mt-8">
               <VehicleButton
-                text="Update Job Card"
+                text={loading ? "Updating..." : "Update Job Card"}
                 type="submit"
                 align="center"
+                disabled={loading}
               />
             </div>
           </form>

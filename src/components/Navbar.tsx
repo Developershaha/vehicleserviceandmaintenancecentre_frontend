@@ -9,7 +9,7 @@ const Navbar = () => {
   const dispatch = useAppDispatch();
   const userDetails = useAppSelector((state) => state.auth);
   const username = userDetails?.username;
-
+  const { userType } = useAppSelector((state) => state.auth);
   const handleLogout = async () => {
     const logoutResponse = await logoutApi(userDetails?.username ?? "");
 
@@ -63,10 +63,10 @@ const Navbar = () => {
 
           {/* Text */}
           <div className="flex flex-col leading-tight">
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
-              Logged in as
-            </span>
             <span className="text-sm font-bold text-slate-900">{username}</span>
+            <span className="text-[10px]  tracking-widest text-slate-500 font-semibold">
+              Logged in as {userType}
+            </span>
           </div>
         </div>
       </div>
