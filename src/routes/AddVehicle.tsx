@@ -25,10 +25,10 @@ const AddVehicle = () => {
   const formik = useFormik<AddVehicleFormValues>({
     initialValues: {
       vehVehicleNumber: "",
-      vehVehicleType: null, // ✅ correctly typed
+      vehVehicleType: null,
       vehBrand: "",
       vehModel: "",
-      vehManufacturingYear: "", // ✅ string initially
+      vehManufacturingYear: "",
     },
     validationSchema: Yup.object({
       vehVehicleNumber: Yup.string()
@@ -73,7 +73,8 @@ const AddVehicle = () => {
         if (redirect === "fromAppoitment") {
           dispatch(
             showSnackbar({
-              message: "Vehicle added  successfully Now you can book appointment",
+              message:
+                "Vehicle added  successfully Now you can book appointment",
               type: "success",
             }),
           );
