@@ -101,7 +101,7 @@ const AppointmentList = () => {
     if (response?.data?.validationCode === "mechanic.assigned.success") {
       dispatch(
         showSnackbar({
-          message: "Appoitment Reject successfully",
+          message: "Mechanic Assigned successfully",
           type: "success",
         }),
       );
