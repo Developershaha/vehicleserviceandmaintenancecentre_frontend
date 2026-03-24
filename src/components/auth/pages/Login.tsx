@@ -19,6 +19,7 @@ import { useState } from "react";
 import EyeSlashIcon from "@heroicons/react/24/outline/EyeSlashIcon";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
 import Cookies from "universal-cookie";
+import ForgetPassword from "./ForgetPassword";
 
 const validationSchema = object({
   username: string().required("Username required"),
@@ -39,6 +40,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isShowPassword, setIsShowPassword] = useState(true);
+  const [openForgot, setOpenForgot] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -130,7 +132,6 @@ const Login = () => {
       <h2 className="mb-6 text-center text-xl font-semibold text-gray-800">
         Please Login Here
       </h2>
-
       <form onSubmit={formik.handleSubmit} className="flex flex-col">
         <VehicleInput
           label="Username"
@@ -155,12 +156,24 @@ const Login = () => {
           endIcon={icon}
           onEndIconClick={() => setIsShowPassword((prev) => !prev)}
         />{" "}
-        {/* ✅ Button */}
-        <div className="mt-4">
-          <VehicleButton text="Login" type="submit" align="center" />
+        <div className="mt-4 flex items-center justify-between">
+          <span
+            className="cursor-pointer text-blue-600 text-sm hover:underline"
+            onClick={() => setOpenForgot(true)}
+          >
+            Forgot Password?
+          </span>
+
+          <VehicleButton text="Login" type="submit" />
         </div>
       </form>
-
+      <ForgetPassword
+        open={openForgot}
+        onClose={() => {
+          setOpenForgot(false);
+        }}
+        onConfirm={() => setOpenForgot(false)}
+      />
       <p className="mt-6 text-center text-sm text-gray-600">
         Don’t have an account?{" "}
         <span
