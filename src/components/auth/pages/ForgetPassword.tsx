@@ -70,7 +70,7 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
       password: otpVerified
         ? string()
             .min(8, "Minimum 8 characters required")
-            .required("Password required")
+            .required("New Password required")
         : string(),
     }),
 
@@ -204,7 +204,11 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
         <h2 className="text-xl font-semibold text-gray-800">Forgot Password</h2>
 
         <p className="mt-2 text-sm text-gray-600">
-          Enter your username to receive OTP.
+          {!otpSent
+            ? "Enter your username to receive an OTP."
+            : !otpVerified
+              ? "Please enter the OTP sent to your email."
+              : "Set your new password"}
         </p>
 
         <form
