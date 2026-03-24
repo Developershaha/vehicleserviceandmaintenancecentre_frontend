@@ -311,6 +311,7 @@ const AddUser = () => {
               required
               value={formik.values.userType}
               options={USER_TYPE_OPTIONS}
+              disabled={isEditMode}
               onChange={(val) => formik.setFieldValue("userType", val)}
               onBlur={() => formik.setFieldTouched("userType", true)}
               error={

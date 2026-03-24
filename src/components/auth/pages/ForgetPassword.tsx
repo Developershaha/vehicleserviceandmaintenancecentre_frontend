@@ -89,7 +89,7 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
 
           if (res?.data?.validationCode === "otp.sent.on.registerd.email") {
             setOtpSent(true);
-            setTimer(180); // ✅ START TIMER (3 min)
+            setTimer(600); //  START TIMER (10 min)
 
             dispatch(
               showSnackbar({
