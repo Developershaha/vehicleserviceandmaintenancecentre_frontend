@@ -2,7 +2,7 @@ import { useFormik } from "formik";
 import axiosInstance from "../auth/pages/apis/axiosInstance";
 import VehicleButton from "./VehicleButton";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { showSnackbar } from "../../store/snackbarSlice";
 import { useEffect, useState } from "react";
 import VehicleTextarea from "./VehicleTextarea";
@@ -43,7 +43,7 @@ const STATUS_OPTIONS = [
 const UpdateJobCard = () => {
   const [loading, setLoading] = useState(false);
   const [jobCard, setJobCard] = useState<JobCardEntity | null>(null);
-
+  const { userType } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { state: appointmentId } = useLocation();
@@ -230,6 +230,7 @@ const UpdateJobCard = () => {
               onBlur={formik.handleBlur}
               clearable
               required
+              disabled={userType === "customer"}
               error={
                 formik.touched.jcStatus
                   ? (formik.errors.jcStatus as string)
@@ -244,7 +245,7 @@ const UpdateJobCard = () => {
               disabled={
                 !["IN_PROGRESS", "INSPECTION"].includes(
                   formik.values.jcStatus?.value || "",
-                )
+                ) || userType === "customer"
               }
               value={formik.values.jcInspectionNotes}
               onChange={formik.handleChange}
@@ -259,7 +260,7 @@ const UpdateJobCard = () => {
                 text={loading ? "Updating..." : "Update Job Card"}
                 type="submit"
                 align="center"
-                disabled={loading}
+                disabled={loading || userType === "customer"}
               />
             </div>
           </form>

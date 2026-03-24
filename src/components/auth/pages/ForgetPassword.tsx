@@ -1,10 +1,11 @@
 import { useFormik } from "formik";
 import VehicleInput from "../../common/VehicleInput";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { object, string } from "yup";
 import axios from "axios";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import { useAppDispatch } from "../../../store/hook";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 type ForgetPasswordProps = {
   open: boolean;
@@ -17,6 +18,38 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [isShowPassword, setIsShowPassword] = useState(true);
+
+  // ✅ NEW: Timer state
+  const [timer, setTimer] = useState(0);
+
+  // ✅ NEW: Timer logic
+  useEffect(() => {
+    let interval: any;
+
+    if (otpSent && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    if (otpSent && timer === 0 && !otpVerified) {
+      // OTP expired → reset flow
+      setOtpSent(false);
+      setOtpVerified(false);
+      setTimer(0);
+      formik.setFieldValue("otp", "");
+
+      dispatch(
+        showSnackbar({
+          message: "OTP expired. Please request a new one.",
+          type: "warning",
+        }),
+      );
+    }
+
+    return () => clearInterval(interval);
+  }, [otpSent, timer, otpVerified]);
 
   const formik = useFormik({
     initialValues: {
@@ -56,6 +89,8 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
 
           if (res?.data?.validationCode === "otp.sent.on.registerd.email") {
             setOtpSent(true);
+            setTimer(180); // ✅ START TIMER (3 min)
+
             dispatch(
               showSnackbar({
                 message: "OTP sent successfully",
@@ -125,6 +160,7 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
             formik.resetForm();
             setOtpSent(false);
             setOtpVerified(false);
+            setTimer(0); // ✅ reset timer
             onClose();
           } else {
             dispatch(
@@ -149,7 +185,11 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
   });
 
   if (!open) return null;
-
+  const icon = isShowPassword ? (
+    <EyeSlashIcon className="h-5 w-5" />
+  ) : (
+    <EyeIcon className="h-5 w-5" />
+  );
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
@@ -186,21 +226,31 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
 
           {/* OTP */}
           {otpSent && (
-            <VehicleInput
-              label="Enter OTP"
-              name="otp"
-              required
-              value={formik.values.otp}
-              onChange={(e: any) => {
-                const value = e.target.value.replace(/\D/g, "");
-                if (value.length <= 6) {
-                  formik.setFieldValue("otp", value);
-                }
-              }}
-              onBlur={formik.handleBlur}
-              error={formik.errors.otp}
-              touched={formik.touched.otp}
-            />
+            <>
+              {/* ✅ Timer UI */}
+              {!otpVerified && (
+                <p className="text-sm text-gray-500">
+                  Expires in: {Math.floor(timer / 60)}:
+                  {("0" + (timer % 60)).slice(-2)}
+                </p>
+              )}
+              <VehicleInput
+                label="Enter OTP"
+                name="otp"
+                required
+                value={formik.values.otp}
+                disabled={otpVerified}
+                onChange={(e: any) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  if (value.length <= 6) {
+                    formik.setFieldValue("otp", value);
+                  }
+                }}
+                onBlur={formik.handleBlur}
+                error={formik.errors.otp}
+                touched={formik.touched.otp}
+              />
+            </>
           )}
 
           {/* Password */}
@@ -208,12 +258,14 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
             <VehicleInput
               label="New Password"
               name="password"
-              type="password"
               required
+              type={isShowPassword ? "password" : "text"}
               value={formik.values.password}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.errors.password}
+              endIcon={icon}
+              onEndIconClick={() => setIsShowPassword((prev) => !prev)}
               touched={formik.touched.password}
             />
           )}
@@ -226,6 +278,7 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
                 formik.resetForm();
                 setOtpSent(false);
                 setOtpVerified(false);
+                setTimer(0); // ✅ reset timer
                 onClose();
               }}
               className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -238,7 +291,9 @@ const ForgetPassword = ({ open, onClose }: ForgetPasswordProps) => {
               disabled={
                 loading ||
                 (!otpSent && !formik?.values?.username) ||
-                (otpSent && !otpVerified && formik?.values?.otp?.length !== 6) ||
+                (otpSent &&
+                  !otpVerified &&
+                  formik?.values?.otp?.length !== 6) ||
                 (otpVerified && formik?.values?.password?.length < 8)
               }
               className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
