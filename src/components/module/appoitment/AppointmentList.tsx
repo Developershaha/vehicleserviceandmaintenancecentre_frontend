@@ -32,7 +32,13 @@ const AppointmentList = () => {
     ASSIGNED: "Assigned",
     REJECTED: "Rejected",
     APPROVED: "Approved",
+    INSPECTION: "Inspection",
+    "IN PROGRESS": "In Progress",
+    "QUALITY CHECK": "Quality Check",
+    "READY FOR DELIVERY": "Ready for Delivery",
+    DELIVERED: "Delivered",
   };
+
   const handleAssignReject = async (action: "approve" | "reject") => {
     if (!selectedAptId) return;
     let response: any;

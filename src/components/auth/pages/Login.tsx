@@ -129,33 +129,44 @@ const Login = () => {
     <VehicleLayout
       logo={<img src={logo} alt="Logo" className="max-w-[300px]" />}
     >
-      <h2 className="mb-6 text-center text-xl font-semibold text-gray-800">
-        Please Login Here
-      </h2>
+      <>
+        {/* Heading */}
+        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-1">
+          Welcome Back 👋
+        </h2>
+        <p className="text-center text-gray-500 text-sm mb-6">
+          Please login to continue
+        </p>
+
+        {/* Form */}
+        <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+          <VehicleInput
+            label="Username"
+            name="username"
+            required
+            value={formik.values.username}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.username}
+            touched={formik.touched.username}
+          />
+
+          <VehicleInput
+            label="Password"
+            name="password"
+            type={isShowPassword ? "password" : "text"}
+            required
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.password}
+            touched={formik.touched.password}
+            endIcon={icon}
+            onEndIconClick={() => setIsShowPassword((prev) => !prev)}
+          />
+        </form>
+      </>
       <form onSubmit={formik.handleSubmit} className="flex flex-col">
-        <VehicleInput
-          label="Username"
-          name="username"
-          required
-          value={formik.values.username}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.username}
-          touched={formik.touched.username}
-        />
-        <VehicleInput
-          label="Password"
-          name="password"
-          type={isShowPassword ? "password" : "text"}
-          required
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.password}
-          touched={formik.touched.password}
-          endIcon={icon}
-          onEndIconClick={() => setIsShowPassword((prev) => !prev)}
-        />{" "}
         <div className="mt-4 flex items-center justify-between">
           <span
             className="cursor-pointer text-blue-600 text-sm hover:underline"
@@ -166,20 +177,27 @@ const Login = () => {
 
           <VehicleButton text="Login" type="submit" />
         </div>
-      </form>
+      </form>{" "}
+      {/* Divider */}
+      <div className="flex items-center my-6">
+        <div className="flex-grow border-t border-gray-200"></div>
+        <span className="mx-3 text-gray-400 text-xs">OR</span>
+        <div className="flex-grow border-t border-gray-200"></div>
+      </div>
       <ForgetPassword
         open={openForgot}
         onClose={() => {
           setOpenForgot(false);
         }}
       />
-      <p className="mt-6 text-center text-sm text-gray-600">
+      {/* Register */}
+      <p className="text-center text-sm text-gray-600">
         Don’t have an account?{" "}
         <span
-          className="cursor-pointer text-blue-600 hover:underline"
+          className="cursor-pointer text-blue-600 hover:underline font-medium"
           onClick={() => navigate("/register")}
         >
-          Register
+          Create account
         </span>
       </p>
     </VehicleLayout>

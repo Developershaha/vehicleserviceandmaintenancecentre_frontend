@@ -82,6 +82,9 @@ const VehicleModuleCard = () => {
   useEffect(() => {
     const fetchAllStats = async () => {
       if (!userType) return;
+
+      const todayData = await axiosInstance.get("today/appointment");
+      console.log("todayData", todayData);
       try {
         setLoadingStats(true);
         const [vRes, aRes, uRes] = await Promise.allSettled([

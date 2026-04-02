@@ -5,17 +5,21 @@ interface AuthLayoutProps {
 
 const VehicleLayout = ({ logo, children }: AuthLayoutProps) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="flex w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl">
-        {/* LEFT – LOGO */}
-        <div className="w-1/2 flex items-center justify-center p-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+
+      {/* Card */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
           {logo}
         </div>
 
-        {/* RIGHT – FORM */}
-        <div className="w-1/2 flex flex-col justify-center p-10">
+        {/* Content */}
+        <div className="mt-4">
           {children}
         </div>
+
       </div>
     </div>
   );
