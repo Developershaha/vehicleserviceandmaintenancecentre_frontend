@@ -132,7 +132,7 @@ const Login = () => {
       <>
         {/* Heading */}
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-1">
-          Welcome Back 👋
+          Welcome Back 
         </h2>
         <p className="text-center text-gray-500 text-sm mb-6">
           Please login to continue

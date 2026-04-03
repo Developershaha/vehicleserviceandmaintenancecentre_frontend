@@ -283,6 +283,7 @@ const AddUser = () => {
               <VehicleInput
                 label="Mobile Number"
                 name="mobile"
+                type="number"
                 required
                 value={formik.values.mobile}
                 onChange={formik.handleChange}

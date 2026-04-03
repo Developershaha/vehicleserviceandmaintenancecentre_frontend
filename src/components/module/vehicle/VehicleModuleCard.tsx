@@ -131,8 +131,8 @@ const VehicleModuleCard = () => {
     fetchAllStats();
   }, [userType]);
 
-  const vCount = useCountUp(stats.vehicles);
-  const aCount = useCountUp(stats.appointments);
+  const vCount = useCountUp(stats?.vehicles);
+  const aCount = useCountUp(stats?.appointments);
   const uCount = useCountUp(stats.users);
 
   return (

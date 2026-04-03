@@ -25,12 +25,9 @@ export interface UserListResponse {
 
 const UserList = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   /* =======================
