@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import VehicleButton from "../../common/VehicleButton";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
-import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
-import { useAppDispatch } from "../../../store/hook";
-import { showSnackbar } from "../../../store/snackbarSlice";
 import { TITLE_OPTIONS } from "../../common/common";
 import CommonPagination from "../../common/CommonPagination";
+import useDebounce from "../../hooks/useDebounce";
+import SearchInput from "../../common/SearchInput";
 
 export interface User {
   useUsername: string;
@@ -15,6 +14,7 @@ export interface User {
   useSurname: string;
   useLoggedIn: 0 | 1 | null;
 }
+
 export interface UserListResponse {
   entity: {
     userList: User[];
@@ -30,6 +30,18 @@ const UserList = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
+
+  // 🔥 NEW: Search state
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+
+  /* =======================
+     Debounce Logic
+     ======================= */
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   /* =======================
      Fetch Users
      ======================= */
@@ -39,7 +51,10 @@ const UserList = () => {
       const response = await axiosInstance.get<UserListResponse>(
         "auth/user/list",
         {
-          params: { pageNumber: page },
+          params: {
+            pageNumber: page,
+            useUsername: debouncedSearch || undefined, // 🔥 search param
+          },
         },
       );
 
@@ -54,100 +69,126 @@ const UserList = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUsers();
-  }, [page]);
+  }, [page, debouncedSearch]);
 
   /* =======================
      Helper
      ======================= */
   const capitalizeFirstLetter = (value?: string): string =>
     value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "-";
-
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-800">Users List</h1>
+        {/* 🔥 Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Users</h1>
+            <p className="text-sm text-gray-500">
+              Manage all system users here
+            </p>
+          </div>
 
           <VehicleButton
-            text="Add User"
+            text="+ Add User"
             onClick={() => navigate("/users/add")}
           />
         </div>
 
-        {/* Table */}
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+        <div className="mb-5">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search by username..."
+          />
+        </div>
+
+        <div className="overflow-hidden rounded-2xl bg-white shadow-md border">
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-sm">
-              <thead className="bg-gray-50">
-                <tr className="border-b">
-                  <th className="px-3 py-2 text-left">Username</th>
-                  <th className="px-3 py-2 text-left">Title</th>
-                  <th className="px-3 py-2 text-left">First Name</th>
-                  <th className="px-3 py-2 text-left">Last Name</th>
-                  <th className="px-3 py-2 text-center">Active/Deactive</th>
-                  <th className="px-3 py-2 text-center">Edit</th>
+            <table className="min-w-full text-sm">
+              {/* Header */}
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Username
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">Title</th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    First Name
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Last Name
+                  </th>
+                  <th className="px-4 py-3 text-center font-semibold">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-center font-semibold">
+                    Action
+                  </th>
                 </tr>
               </thead>
 
+              {/* Body */}
               <tbody>
-                {/* Loading */}
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-gray-500">
+                    <td colSpan={6} className="py-10 text-center text-gray-500">
                       Loading users...
                     </td>
                   </tr>
                 )}
 
-                {/* Data */}
                 {!loading &&
-                  users?.length > 0 &&
-                  users.map((user) => (
+                  users?.map((user, index) => (
                     <tr
-                      key={user?.useUsername}
-                      className="border-b hover:bg-gray-50"
+                      key={user.useUsername}
+                      className={`border-t transition ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } hover:bg-blue-50`}
                     >
-                      <td className="px-3 py-2 font-medium">
-                        {user?.useUsername ?? "-"}
+                      <td className="px-4 py-3 font-medium text-gray-800">
+                        {user.useUsername}
                       </td>
-                      <td className="px-3 py-2">
-                        {TITLE_OPTIONS.find(
-                          (option) => option?.value === user?.useTitle,
-                        )?.label ?? "-"}
+
+                      <td className="px-4 py-3">
+                        {
+                          TITLE_OPTIONS.find((t) => t.value === user.useTitle)
+                            ?.label
+                        }
                       </td>
-                      <td className="px-3 py-2">
-                        {capitalizeFirstLetter(user?.useFirstName)}
+
+                      <td className="px-4 py-3">
+                        {capitalizeFirstLetter(user.useFirstName)}
                       </td>
-                      <td className="px-3 py-2">
-                        {capitalizeFirstLetter(user?.useSurname)}
+
+                      <td className="px-4 py-3">
+                        {capitalizeFirstLetter(user.useSurname)}
                       </td>
-                      <td className="px-3 py-2 text-center">
-                        {user?.useLoggedIn === 1 ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 border border-green-300">
-                            <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                            Online
+
+                      {/* Status */}
+                      <td className="px-4 py-3 text-center">
+                        {user.useLoggedIn === 1 ? (
+                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                            🟢 Online
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700 border border-red-300">
-                            <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                            Offline
+                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                            🔴 Offline
                           </span>
                         )}
                       </td>
-                      {/* Edit */}
-                      <td className="px-3 py-2 text-center">
+
+                      {/* Action */}
+                      <td className="px-4 py-3 text-center">
                         <button
-                          onClick={() => {
-                            navigate("/users/add", {
-                              state: { user },
-                            });
-                          }}
-                          className="rounded-md bg-blue-50 px-4 py-1.5
-                          text-sm text-blue-600 border border-blue-200
-                          hover:bg-blue-100"
+                          onClick={() =>
+                            navigate("/users/add", { state: { user } })
+                          }
+                          className="px-4 py-1.5 text-sm rounded-lg
+                                   bg-blue-600 text-white
+                                   hover:bg-blue-700 transition shadow-sm"
                         >
                           Edit
                         </button>
@@ -155,10 +196,9 @@ const UserList = () => {
                     </tr>
                   ))}
 
-                {/* Empty */}
-                {!loading && users?.length === 0 && (
+                {!loading && users.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-gray-500">
+                    <td colSpan={6} className="py-10 text-center text-gray-500">
                       No users found
                     </td>
                   </tr>
@@ -167,14 +207,17 @@ const UserList = () => {
             </table>
           </div>
         </div>
-        <CommonPagination
-          totalCount={totalCount}
-          currentPage={page}
-          onPageChange={(newPage) => setPage(newPage)}
-        />
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <CommonPagination
+            totalCount={totalCount}
+            currentPage={page}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
+        </div>
       </div>
     </div>
   );
 };
-
 export default UserList;

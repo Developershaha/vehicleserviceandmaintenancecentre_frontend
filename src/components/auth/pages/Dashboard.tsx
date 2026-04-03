@@ -7,7 +7,17 @@ const Dashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const navigate = useNavigate();
-
+  const STATUS_LABEL: Record<string, string> = {
+    PENDING: "Pending",
+    ASSIGNED: "Assigned",
+    REJECTED: "Rejected",
+    APPROVED: "Approved",
+    INSPECTION: "Inspection",
+    "IN PROGRESS": "In Progress",
+    "QUALITY CHECK": "Quality Check",
+    "READY FOR DELIVERY": "Ready for Delivery",
+    DELIVERED: "Delivered",
+  };
   useEffect(() => {
     const fetchTodayAppointments = async () => {
       try {
@@ -84,7 +94,8 @@ const Dashboard = () => {
                         : "bg-green-100 text-green-700"
                     }`}
                   >
-                    {apt.aptStatus}
+                    {STATUS_LABEL[apt?.aptStatus] ??
+                      apt?.aptStatus}
                   </span>
                 </div>
 

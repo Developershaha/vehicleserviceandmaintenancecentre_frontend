@@ -73,53 +73,61 @@ const BookAppoitment = ({ vehicles }: BookAppoitmentProps) => {
   });
 
   return (
-    <div>
-      <form onSubmit={formik.handleSubmit} className="space-y-5">
-        <VehicleAutoSelectField
-          label="Appointment vehicle Number"
-          name="aptVehId"
-          value={formik.values.aptVehId}
-          options={vehicleOptions ?? []}
-          onChange={(val) => formik.setFieldValue("aptVehId", val)}
-          onBlur={formik.handleBlur}
-          clearable
-          required
-          error={
-            formik.touched.aptVehId
-              ? (formik.errors.aptVehId as string)
-              : undefined
-          }
-          touched={formik.touched.aptVehId}
-        />
+    <>
+      <div className="flex justify-center px-4 py-10">
+        <div className="relative w-full max-w-xl rounded-xl bg-white p-8 shadow-md hover:shadow-lg transition">
+          <form onSubmit={formik.handleSubmit} className="space-y-5">
+            <VehicleAutoSelectField
+              label="Appointment vehicle Number"
+              name="aptVehId"
+              value={formik.values.aptVehId}
+              options={vehicleOptions ?? []}
+              onChange={(val) => formik.setFieldValue("aptVehId", val)}
+              onBlur={formik.handleBlur}
+              clearable
+              required
+              error={
+                formik.touched.aptVehId
+                  ? (formik.errors.aptVehId as string)
+                  : undefined
+              }
+              touched={formik.touched.aptVehId}
+            />
 
-        <VehicleDateInput
-          label="Appointment Date"
-          name="aptDate"
-          value={formik.values.aptDate}
-          required
-          onChange={(val) => formik.setFieldValue("aptDate", val)}
-          onBlur={formik.handleBlur}
-          error={formik.errors.aptDate}
-          touched={formik.touched.aptDate}
-        />
+            <VehicleDateInput
+              label="Appointment Date"
+              name="aptDate"
+              value={formik.values.aptDate}
+              required
+              onChange={(val) => formik.setFieldValue("aptDate", val)}
+              onBlur={formik.handleBlur}
+              error={formik.errors.aptDate}
+              touched={formik.touched.aptDate}
+            />
 
-        <VehicleTextarea
-          label="Problem Description"
-          name="aptProblemDescription"
-          value={formik.values.aptProblemDescription}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.aptProblemDescription}
-          touched={formik.touched.aptProblemDescription}
-          required
-        />
+            <VehicleTextarea
+              label="Problem Description"
+              name="aptProblemDescription"
+              value={formik.values.aptProblemDescription}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.aptProblemDescription}
+              touched={formik.touched.aptProblemDescription}
+              required
+            />
 
-        {/* Submit */}
-        <div className="pt-2">
-          <VehicleButton text="Book Appointment" type="submit" align="center" />
+            {/* Submit */}
+            <div className="pt-2">
+              <VehicleButton
+                text="Book Appointment"
+                type="submit"
+                align="center"
+              />
+            </div>
+          </form>
         </div>
-      </form>
-    </div>
+      </div>
+    </>
   );
 };
 

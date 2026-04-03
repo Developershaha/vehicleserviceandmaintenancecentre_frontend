@@ -8,6 +8,8 @@ import ConfirmDeleteModal from "../../common/ConfirmDeleteModal";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { showSnackbar } from "../../../store/snackbarSlice";
 import CommonPagination from "../../common/CommonPagination";
+import useDebounce from "../../hooks/useDebounce";
+import SearchInput from "../../common/SearchInput";
 
 const VehicleList = () => {
   const navigate = useNavigate();
@@ -19,13 +21,19 @@ const VehicleList = () => {
   const { userType } = useAppSelector((state) => state.auth);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const fetchVehicles = async () => {
     let response;
     try {
       setLoading(true);
       if (userType === "admin") {
         response = await axiosInstance.get("/admin/vehicles", {
-          params: { pageNumber: page },
+          params: {
+            pageNumber: page,
+            vehicleNumber:
+              debouncedSearch.length >= 7 ? debouncedSearch : undefined,
+          },
         });
       } else {
         response = await axiosInstance.get("/customer/vehicles");
@@ -35,6 +43,8 @@ const VehicleList = () => {
         setVehicles(response?.data?.entity?.finalVehicleList || []);
         if (response?.data?.entity?.vehicleCount) {
           setTotalCount(response?.data?.entity?.vehicleCount);
+        } else if (response?.data?.validationCode === "vehicle.not.found") {
+          setTotalCount(0);
         }
       } else {
         setVehicles(response?.data?.entity || []);
@@ -50,6 +60,13 @@ const VehicleList = () => {
   useEffect(() => {
     fetchVehicles();
   }, [page]);
+
+  useEffect(() => {
+    if (debouncedSearch.length >= 7 || !debouncedSearch) {
+      setPage(1);
+      fetchVehicles();
+    }
+  }, [debouncedSearch]);
 
   const handleDelete = async () => {
     if (!selectedVehId) return;
@@ -79,12 +96,37 @@ const VehicleList = () => {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-800">Vehicles List</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Vehicles</h1>
+            <p className="text-sm text-gray-500">
+              Manage all system vehicles here
+            </p>
+          </div>
           <VehicleButton
             text="Add Vehicle"
             onClick={() => navigate("/vehicles/add")}
           />
         </div>
+
+        {userType !== "customer" && (
+          <div className="mb-4 flex flex-col gap-1">
+            <SearchInput
+              value={search}
+              onChange={(value) => {
+                if (value?.length <= 15) {
+                  setSearch(value);
+                }
+              }}
+              placeholder="Search by vehicle number..."
+            />
+
+            {search.length > 0 && search.length < 7 && (
+              <span className="text-xs text-red-500">
+                Enter at least {7} characters to search
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Table Card */}
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">

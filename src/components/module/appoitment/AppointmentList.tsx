@@ -12,6 +12,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CommonPagination from "../../common/CommonPagination";
 import { TITLE_OPTIONS } from "../../common/common";
+import useDebounce from "../../hooks/useDebounce";
+import SearchInput from "../../common/SearchInput";
 const AppointmentList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -27,6 +29,14 @@ const AppointmentList = () => {
   const [showAssign, setShowAssign] = useState(false);
   const [appointmentData, setAppointmentData] = useState({});
   const [expandedAptId, setExpandedAptId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+  const MIN_LENGTH = 7;
+  const MAX_LENGTH = 15;
+  const isValidSearch =
+    debouncedSearch.length === 0 ||
+    (debouncedSearch.length >= MIN_LENGTH &&
+      debouncedSearch.length <= MAX_LENGTH);
   const STATUS_LABEL: Record<string, string> = {
     PENDING: "Pending",
     ASSIGNED: "Assigned",
@@ -118,8 +128,6 @@ const AppointmentList = () => {
   };
   const fetchVehicles = async () => {
     let responseAppoitment;
-    let responseMechanical;
-    let responseAdmin;
 
     try {
       setLoading(true);
@@ -127,23 +135,40 @@ const AppointmentList = () => {
       if (userType === "customer") {
         responseAppoitment = await axiosInstance.get("/customer/appointments");
       } else if (userType === "mechanic") {
-        responseMechanical = await axiosInstance.get("/mechanic/appointments", {
-          params: { pageNumber: page },
+        responseAppoitment = await axiosInstance.get("/mechanic/appointments", {
+          params: {
+            pageNumber: page,
+            vehicleNumber:
+              debouncedSearch.length >= MIN_LENGTH
+                ? debouncedSearch
+                : undefined,
+          },
         });
       } else if (userType === "admin") {
-        responseAdmin = await axiosInstance.get("/admin/appointments/list", {
-          params: { pageNumber: page },
-        });
+        responseAppoitment = await axiosInstance.get(
+          "/admin/appointments/list",
+          {
+            params: {
+              pageNumber: page,
+              vehicleNumber:
+                debouncedSearch.length >= MIN_LENGTH
+                  ? debouncedSearch
+                  : undefined,
+            },
+          },
+        );
       }
 
-      const entity =
-        responseAppoitment?.data?.entity ||
-        responseMechanical?.data?.entity ||
-        responseAdmin?.data?.entity;
+      const entity = responseAppoitment?.data?.entity || [];
       if (userType === "admin" || userType === "mechanic") {
         setAppoitmentList(entity?.appointmentList || []);
         if (entity?.appointmentCount) {
           setTotalCount(entity?.appointmentCount);
+        } else if (
+          responseAppoitment?.data?.validationCode ===
+          "appointment.list.not.found"
+        ) {
+          setTotalCount(0);
         }
       } else {
         setAppoitmentList(entity || []);
@@ -184,8 +209,14 @@ const AppointmentList = () => {
   };
 
   useEffect(() => {
+    if (!isValidSearch) return;
+
     fetchVehicles();
-  }, [page]);
+  }, [page, debouncedSearch]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   if (loading) {
     return;
@@ -198,9 +229,12 @@ const AppointmentList = () => {
     <div className="p-6">
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-800">
-            Appointment List
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Appointment List</h1>
+            <p className="text-sm text-gray-500">
+              Manage all system Appointments here
+            </p>
+          </div>
 
           <VehicleButton
             text="Book Appointment"
@@ -211,7 +245,26 @@ const AppointmentList = () => {
             }
           />
         </div>
+        {userType !== "customer" && (
+          <div className="mb-4 flex flex-col gap-1">
+            <SearchInput
+              value={search}
+              onChange={(value) => {
+                if (value.length <= MAX_LENGTH) {
+                  setSearch(value.toUpperCase()); // 🔥 optional uppercase
+                }
+              }}
+              placeholder="Search by vehicle number..."
+            />
 
+            {/* Min validation */}
+            {search.length > 0 && search.length < MIN_LENGTH && (
+              <span className="text-xs text-red-500">
+                Enter at least {MIN_LENGTH} characters to search
+              </span>
+            )}
+          </div>
+        )}
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
