@@ -76,13 +76,10 @@ const GenerateBillPopup = ({
     };
   };
   const getExtraBillDetails = async (bId: number) => {
-    console.log("bId", bId);
     try {
       const response = await axiosInstance.get(`add-bill/extra-details`, {
         params: { bId },
       });
-
-      console.log("Extra Details:", response.data);
 
       const entity = response?.data?.entity;
 
@@ -95,7 +92,7 @@ const GenerateBillPopup = ({
   useEffect(() => {
     if (!selectedRow?.bId) return;
 
-    getExtraBillDetails(selectedRow.bId);
+    getExtraBillDetails(selectedRow?.bId);
   }, [selectedRow]);
 
   if (!open) return null;
@@ -130,34 +127,52 @@ const GenerateBillPopup = ({
               0,
             );
             const payload = {
-              addBillItemJson: values.services.map((item: any) => ({
-                biServiceName:
-                  item.serviceType === "other"
-                    ? item.customService
-                    : SERVICE_OPTIONS.find(
-                        (opt) => opt.value === item.serviceType,
-                      )?.label,
+              addBillItemJson: values.services.map((item: any) => {
+                return {
+                  biId: selectedRow?.bId || undefined,
 
-                biQuantity: item.quantity,
-                biRate: item.price,
-                biTotal: calculateRowTotal(item),
-              })),
+                  biServiceName:
+                    item.serviceType === "other"
+                      ? item.customService
+                      : SERVICE_OPTIONS.find(
+                          (opt) => opt.value === item.serviceType,
+                        )?.label,
+
+                  biQuantity: item.quantity,
+                  biRate: item.price,
+                  biTotal: calculateRowTotal(item),
+                };
+              }),
+
+              bId: initialData?.bill?.bId,
               bAptId: selectedRow?.aptId,
               bJcId: selectedRow?.jcId,
               bTotal: subTotal,
               bDiscount: values.discount,
-
               bFinalTotal: subTotal - (subTotal * values.discount) / 100,
             };
-            const response = await axiosInstance.post("/add-bill", payload);
-            console.log("Payload 👉", response);
-            if (response?.data?.validationCode === "finance.bill.add.success") {
+            let response;
+
+            if (selectedRow?.bId) {
+              // ✅ UPDATE API
+              response = await axiosInstance.put("/edit-bill", payload);
+            } else {
+              // ✅ CREATE API
+              response = await axiosInstance.post("/add-bill", payload);
+            }
+            if (
+              response?.data?.validationCode === "finance.bill.add.success" ||
+              response?.data?.validationCode === "finance.bill.edit.success"
+            ) {
               dispatch(
                 showSnackbar({
-                  message: "Bill generated sucessfully ",
+                  message: selectedRow?.bId
+                    ? "Bill updated successfully"
+                    : "Bill generated successfully",
                   type: "success",
                 }),
               );
+
               fetchBillings();
               onClose();
             }
