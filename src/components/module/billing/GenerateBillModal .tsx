@@ -89,6 +89,7 @@ const GenerateBillPopup = ({
       throw error;
     }
   };
+
   useEffect(() => {
     if (!selectedRow?.bId) return;
 
@@ -129,8 +130,6 @@ const GenerateBillPopup = ({
             const payload = {
               addBillItemJson: values.services.map((item: any) => {
                 return {
-                  biId: selectedRow?.bId || undefined,
-
                   biServiceName:
                     item.serviceType === "other"
                       ? item.customService
@@ -144,7 +143,7 @@ const GenerateBillPopup = ({
                 };
               }),
 
-              bId: initialData?.bill?.bId,
+              bId: initialData?.bill?.bId || null,
               bAptId: selectedRow?.aptId,
               bJcId: selectedRow?.jcId,
               bTotal: subTotal,
@@ -175,6 +174,7 @@ const GenerateBillPopup = ({
 
               fetchBillings();
               onClose();
+              setInitialData(null);
             }
           }}
         >
@@ -423,7 +423,10 @@ const GenerateBillPopup = ({
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={() => {
+                      onClose();
+                      setInitialData(null);
+                    }}
                     className="px-4 py-2 border rounded-lg"
                   >
                     Cancel

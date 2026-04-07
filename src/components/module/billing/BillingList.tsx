@@ -7,6 +7,8 @@ import dayjs from "dayjs";
 import VehicleButton from "../../common/VehicleButton";
 import { STATUS_LABEL, TITLE_OPTIONS } from "../../common/common";
 import GenerateBillPopup from "./GenerateBillModal ";
+import { showSnackbar } from "../../../store/snackbarSlice";
+import { useAppDispatch } from "../../../store/hook";
 
 /* =======================
    Interface
@@ -36,7 +38,7 @@ const BillingList = () => {
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
-
+  const dispatch = useAppDispatch();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [selectedRow, setSelectedRow] = useState<any>(null);
@@ -75,11 +77,11 @@ const BillingList = () => {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (item: any) => {
     // STEP 1: Create order from backend
-    const { data } = await axiosInstance.post("/create-order?amount=1");
-
-    console.log("data", data);
+    const { data } = await axiosInstance.post(
+      `/create-order?amount=${item?.bFinalTotal}`,
+    );
 
     // STEP 2: Open Razorpay UI
     const options = {
@@ -91,9 +93,16 @@ const BillingList = () => {
       name: "Vehicle Service",
       description: "Service Payment",
 
-      handler: function (response: any) {
+      handler: async function (response: any) {
+        const modifiedResponse = {
+          ...response,
+          payAptId: item?.aptId, // ✅ appointment id
+          payAmount: item?.bFinalTotal, // ✅ amount
+        };
+
         // STEP 3: Send response to backend
-        verifyPayment(response);
+        await verifyPayment(modifiedResponse);
+        await fetchBillings();
       },
 
       theme: {
@@ -107,8 +116,12 @@ const BillingList = () => {
 
   const verifyPayment = async (response: any) => {
     await axiosInstance.post("/verify", response);
-
-    alert("Payment Successful ✅");
+    dispatch(
+      showSnackbar({
+        message: "Payment Successfull",
+        type: "success",
+      }),
+    );
   };
 
   useEffect(() => {
@@ -219,7 +232,9 @@ const BillingList = () => {
                         {dayjs(item.aptCreated).format("DD/MM/YYYY")}
                       </td>
                       <td className="px-3 py-2 font-semibold text-blue-600">
-                        {STATUS_LABEL[item?.aptStatus] ?? item?.aptStatus}
+                        {STATUS_LABEL[item?.aptStatus] === "Ready for Delivery"
+                          ? "Pending"
+                          : "Paid"}
                       </td>
                       <td className="px-3 py-2 text-gray-700">
                         {getFullName(
@@ -248,8 +263,14 @@ const BillingList = () => {
                             className="!bg-white !text-blue-600 border border-blue-200 !py-1.5 !px-3 hover:!bg-blue-600 hover:!text-white transition-all shadow-sm !text-[11px] !font-bold"
                           />
                           <button
-                            onClick={handlePayment}
-                            className="bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] hover:bg-blue-600 transition-colors shadow-lg shadow-slate-200"
+                            onClick={() => handlePayment(item)}
+                            disabled={!item?.bId}
+                            className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors shadow-lg shadow-slate-200
+    ${
+      item?.bId
+        ? "bg-slate-900 text-white hover:bg-blue-600"
+        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+    }`}
                           >
                             PAY
                           </button>
