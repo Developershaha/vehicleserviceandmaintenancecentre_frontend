@@ -13,6 +13,8 @@ import AppoitmentBookOrVehicle from "../components/module/appoitment/AppoitmentB
 import UserList from "../components/module/user/UserList";
 import AddUser from "../components/module/user/AddUser";
 import UpdateJobCard from "../components/common/UpdateJobCard";
+import BillingList from "../components/module/billing/BillingList";
+import CreateBilling from "../components/module/billing/CreateBilling";
 
 const AppRoutes = () => {
   return (
@@ -44,6 +46,10 @@ const AppRoutes = () => {
         {/* 👤 User Module */}
         <Route path="/users" element={<UserList />} />
         <Route path="/users/add" element={<AddUser />} />
+        {/* <Route path="/appointments/add" element={<AddVehicle />} /> */}
+        {/* 👤 User Module */}
+        <Route path="/billinglist" element={<BillingList />} />
+        <Route path="/billing/add" element={<CreateBilling />} />
       </Route>
 
       {/* Fallback */}

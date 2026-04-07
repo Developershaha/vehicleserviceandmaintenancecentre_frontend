@@ -36,8 +36,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 space-y-6">
-      {/* 🔥 Header */}
-      <div className="flex flex-col gap-1">
+     <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-500 text-sm">
           Welcome back! Here’s your system overview.
@@ -94,8 +93,7 @@ const Dashboard = () => {
                         : "bg-green-100 text-green-700"
                     }`}
                   >
-                    {STATUS_LABEL[apt?.aptStatus] ??
-                      apt?.aptStatus}
+                    {STATUS_LABEL[apt?.aptStatus] ?? apt?.aptStatus}
                   </span>
                 </div>
 

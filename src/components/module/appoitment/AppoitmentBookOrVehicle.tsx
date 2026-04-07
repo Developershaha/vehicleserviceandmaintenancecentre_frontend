@@ -1,9 +1,9 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import BookAppoitment from "./BookAppoitment";
 import VehicleButton from "../../common/VehicleButton";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../store/hook";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const AppoitmentBookOrVehicle = () => {
   const navigate = useNavigate();

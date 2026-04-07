@@ -11,7 +11,7 @@ import AssignMechanicModal from "../../common/AssignMechanicModal";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CommonPagination from "../../common/CommonPagination";
-import { TITLE_OPTIONS } from "../../common/common";
+import { STATUS_LABEL, TITLE_OPTIONS } from "../../common/common";
 import useDebounce from "../../hooks/useDebounce";
 import SearchInput from "../../common/SearchInput";
 const AppointmentList = () => {
@@ -37,17 +37,6 @@ const AppointmentList = () => {
     debouncedSearch.length === 0 ||
     (debouncedSearch.length >= MIN_LENGTH &&
       debouncedSearch.length <= MAX_LENGTH);
-  const STATUS_LABEL: Record<string, string> = {
-    PENDING: "Pending",
-    ASSIGNED: "Assigned",
-    REJECTED: "Rejected",
-    APPROVED: "Approved",
-    INSPECTION: "Inspection",
-    "IN PROGRESS": "In Progress",
-    "QUALITY CHECK": "Quality Check",
-    "READY FOR DELIVERY": "Ready for Delivery",
-    DELIVERED: "Delivered",
-  };
 
   const handleAssignReject = async (action: "approve" | "reject") => {
     if (!selectedAptId) return;
@@ -230,7 +219,9 @@ const AppointmentList = () => {
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Appointment List</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Appointment List
+            </h1>
             <p className="text-sm text-gray-500">
               Manage all system Appointments here
             </p>

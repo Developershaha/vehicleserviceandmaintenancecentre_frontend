@@ -83,8 +83,6 @@ const VehicleModuleCard = () => {
     const fetchAllStats = async () => {
       if (!userType) return;
 
-      const todayData = await axiosInstance.get("today/appointment");
-      console.log("todayData", todayData);
       try {
         setLoadingStats(true);
         const [vRes, aRes, uRes] = await Promise.allSettled([
@@ -166,6 +164,18 @@ const VehicleModuleCard = () => {
           colorClass="purple"
           isLoading={loadingStats}
           onClick={() => navigate("/users")}
+        />
+      )}
+
+      {userType === "admin" && (
+        <StatCard
+          title="Service Billing"
+          count={uCount}
+          label="Bills Generated"
+          icon="🧾"
+          colorClass="amber"
+          isLoading={loadingStats}
+          onClick={() => navigate("/billinglist")}
         />
       )}
     </div>

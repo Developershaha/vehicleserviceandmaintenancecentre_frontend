@@ -48,6 +48,8 @@ const UserList = () => {
   const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
+      const resdata = await axiosInstance.get("finance/bill/list");
+      console.log("res", resdata);
       const response = await axiosInstance.get<UserListResponse>(
         "auth/user/list",
         {
