@@ -77,6 +77,7 @@ const VehicleModuleCard = () => {
     vehicles: 0,
     appointments: 0,
     users: 0,
+    bills: 0,
   });
 
   useEffect(() => {
@@ -85,12 +86,16 @@ const VehicleModuleCard = () => {
 
       try {
         setLoadingStats(true);
-        const [vRes, aRes, uRes] = await Promise.allSettled([
+
+        const [vRes, aRes, uRes, bRes] = await Promise.allSettled([
+          // Vehicles
           userType === "admin"
             ? axiosInstance.get("/admin/vehicles", {
                 params: { pageNumber: 1 },
               })
             : axiosInstance.get("/customer/vehicles"),
+
+          // Appointments
           userType === "admin"
             ? axiosInstance.get("/admin/appointments/list", {
                 params: { pageNumber: 1 },
@@ -100,25 +105,41 @@ const VehicleModuleCard = () => {
                   params: { pageNumber: 1 },
                 })
               : axiosInstance.get("/customer/appointments"),
+
+          // Users
           userType === "admin"
-            ? axiosInstance.get("auth/user/list", { params: { pageNumber: 1 } })
+            ? axiosInstance.get("auth/user/list", {
+                params: { pageNumber: 1 },
+              })
             : Promise.resolve({ data: { entity: { userListCount: 0 } } }),
+
+          //  Billing (NEW)
+          axiosInstance.get("/finance/bill/list", {
+            params: { pageNumber: 1 },
+          }),
         ]);
 
         const vData = vRes.status === "fulfilled" ? vRes.value.data : null;
         const aData = aRes.status === "fulfilled" ? aRes.value.data : null;
         const uData = uRes.status === "fulfilled" ? uRes.value.data : null;
+        const bData = bRes.status === "fulfilled" ? bRes.value.data : null;
 
         setStats({
           vehicles:
             userType === "admin"
               ? (vData?.entity?.vehicleCount ?? 0)
               : (vData?.entity?.length ?? 0),
+
           appointments:
             userType === "admin" || userType === "mechanic"
               ? (aData?.entity?.appointmentCount ?? 0)
               : (aData?.entity?.length ?? 0),
+
           users: uData?.entity?.userListCount ?? uData?.entity?.userCount ?? 0,
+
+          // ✅ Add billing count
+          bills:
+            bData?.entity?.financeBillListCount ?? bData?.entity?.length ?? 0,
         });
       } catch (error) {
         console.error("Stats fetch failed", error);
@@ -126,12 +147,13 @@ const VehicleModuleCard = () => {
         setLoadingStats(false);
       }
     };
+
     fetchAllStats();
   }, [userType]);
-
   const vCount = useCountUp(stats?.vehicles);
   const aCount = useCountUp(stats?.appointments);
   const uCount = useCountUp(stats.users);
+  const uBill = useCountUp(stats.bills);
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 p-4">
@@ -170,7 +192,7 @@ const VehicleModuleCard = () => {
       {userType === "admin" && (
         <StatCard
           title="Service Billing"
-          count={uCount}
+          count={uBill}
           label="Bills Generated"
           icon="🧾"
           colorClass="amber"
