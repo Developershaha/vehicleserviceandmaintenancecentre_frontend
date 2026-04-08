@@ -14,7 +14,6 @@ import {
   BarChart,
   Bar,
   XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
@@ -175,12 +174,6 @@ const Services = () => {
               <div className="bg-blue-500/30 p-2 rounded-xl">
                 <Gauge size={24} />
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="bg-green-400/20 text-green-300 px-2 py-0.5 rounded-md mr-2">
-                +12%
-              </span>
-              <span>from last month</span>
             </div>
           </div>
         </div>
