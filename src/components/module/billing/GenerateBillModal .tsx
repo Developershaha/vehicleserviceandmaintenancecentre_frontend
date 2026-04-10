@@ -4,7 +4,7 @@ import VehicleInput from "../../common/VehicleInput";
 import VehicleAutoSelectField from "../../common/VehicleAutoSelectField";
 import axiosInstance from "../../auth/pages/apis/axiosInstance";
 import { showSnackbar } from "../../../store/snackbarSlice";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { useEffect, useState } from "react";
 
 // Services
@@ -52,6 +52,8 @@ const GenerateBillPopup = ({
 }: any) => {
   const dispatch = useAppDispatch();
   const [initialData, setInitialData] = useState(null);
+  const { userType } = useAppSelector((state) => state.auth);
+
   const mapApiToFormik = (data: any) => {
     if (!data) return null;
 
@@ -303,6 +305,7 @@ const GenerateBillPopup = ({
                                 label="Price"
                                 name={`services.${index}.price`}
                                 type="number"
+                                required
                                 inputProps={{ min: 0, step: 0.01 }}
                                 value={service.price}
                                 onChange={(e) => {
@@ -427,11 +430,11 @@ const GenerateBillPopup = ({
 
                   <button
                     type="submit"
-                    disabled={!!selectedRow?.bId}
+                    disabled={!!selectedRow?.bId || userType === "customer"}
                     className={`
     px-4 py-2 rounded-lg text-white
     ${
-      selectedRow?.bId
+      selectedRow?.bId || userType === "customer"
         ? "bg-gray-400 cursor-not-allowed"
         : "bg-blue-600 hover:bg-blue-700"
     }

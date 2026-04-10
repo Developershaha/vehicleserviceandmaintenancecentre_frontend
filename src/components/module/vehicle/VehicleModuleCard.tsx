@@ -113,10 +113,16 @@ const VehicleModuleCard = () => {
               })
             : Promise.resolve({ data: { entity: { userListCount: 0 } } }),
 
-          //  Billing (NEW)
-          axiosInstance.get("/finance/bill/list", {
-            params: { pageNumber: 1 },
-          }),
+          // ✅ Billing (UPDATED)
+          userType === "admin"
+            ? axiosInstance.get("/finance/bill/list", {
+                params: { pageNumber: 1 },
+              })
+            : userType === "customer"
+              ? axiosInstance.get("/finance/customer/bill/list", {
+                  params: { pageNumber: 1 },
+                })
+              : Promise.resolve({ data: { entity: { billListCount: 0 } } }),
         ]);
 
         const vData = vRes.status === "fulfilled" ? vRes.value.data : null;
@@ -189,7 +195,7 @@ const VehicleModuleCard = () => {
         />
       )}
 
-      {userType === "admin" && (
+      {userType !== "mechanic" && (
         <StatCard
           title="Service Billing"
           count={uBill}

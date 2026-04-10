@@ -8,7 +8,7 @@ import VehicleButton from "../../common/VehicleButton";
 import { STATUS_LABEL, TITLE_OPTIONS } from "../../common/common";
 import GenerateBillPopup from "./GenerateBillModal ";
 import { showSnackbar } from "../../../store/snackbarSlice";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 
 /* =======================
    Interface
@@ -43,6 +43,7 @@ const BillingList = () => {
   const debouncedSearch = useDebounce(search, 500);
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [openBillPopup, setOpenBillPopup] = useState(false);
+  const { userType } = useAppSelector((state) => state.auth);
 
   const MIN_LENGTH = 7;
   const MAX_LENGTH = 15;
@@ -64,11 +65,21 @@ const BillingList = () => {
       ) {
         return;
       }
-      const response = await axiosInstance.get("finance/bill/list", {
-        params,
-      });
+      let response;
+      if (userType === "customer") {
+        response = await axiosInstance.get("finance/customer/bill/list", {
+          params,
+        });
+      } else {
+        response = await axiosInstance.get("finance/bill/list", {
+          params,
+        });
+      }
 
-      const list = response?.data?.entity?.financeBillListRecordList || [];
+      const list =
+        response?.data?.entity?.financeBillListRecordList ||
+        response?.data?.entity?.financeCustomerBillListRecordList ||
+        [];
 
       const count = response?.data?.entity?.financeBillListCount || 0;
 
