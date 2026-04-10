@@ -275,7 +275,11 @@ const BillingList = () => {
                               setSelectedRow(item);
                               setOpenBillPopup(true);
                             }}
-                            text={item?.bId ? "View Bill" : "Generate Bill"}
+                            text={
+                              item?.bId || userType === "customer"
+                                ? "View Bill"
+                                : "Generate Bill"
+                            }
                             className="!bg-white !text-blue-600 border border-blue-200 !py-1.5 !px-3 hover:!bg-blue-600 hover:!text-white transition-all shadow-sm !text-[11px] !font-bold"
                           />
                           <button
