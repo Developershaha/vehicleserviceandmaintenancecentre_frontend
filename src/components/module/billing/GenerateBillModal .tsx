@@ -42,9 +42,6 @@ const validationSchema = Yup.object({
         .required("Price required"),
     }),
   ),
-  discount: Yup.number()
-    .typeError("Enter valid discount")
-    .required("discount required"),
 });
 
 const GenerateBillPopup = ({
@@ -380,7 +377,6 @@ const GenerateBillPopup = ({
                   <VehicleInput
                     label="Discount (%)"
                     name="discount"
-                    required
                     type="number"
                     inputProps={{ min: 0, max: 99, step: 1 }}
                     value={formik.values.discount}
@@ -404,9 +400,6 @@ const GenerateBillPopup = ({
                         e.preventDefault();
                       }
                     }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched?.discount && formik.errors?.discount}
-                    touched={formik.touched?.discount}
                   />
 
                   <div>
@@ -434,7 +427,15 @@ const GenerateBillPopup = ({
 
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    disabled={!!selectedRow?.bId}
+                    className={`
+    px-4 py-2 rounded-lg text-white
+    ${
+      selectedRow?.bId
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700"
+    }
+  `}
                   >
                     Generate Bill
                   </button>

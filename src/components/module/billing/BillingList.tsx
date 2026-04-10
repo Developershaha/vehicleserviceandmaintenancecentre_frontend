@@ -47,19 +47,25 @@ const BillingList = () => {
   const MIN_LENGTH = 7;
   const MAX_LENGTH = 15;
   const isValidSearch =
-    debouncedSearch.length === 0 ||
-    (debouncedSearch.length >= MIN_LENGTH &&
-      debouncedSearch.length <= MAX_LENGTH);
+    debouncedSearch.length >= MIN_LENGTH &&
+    debouncedSearch.length <= MAX_LENGTH;
 
   const fetchBillings = async () => {
     setLoading(true);
     try {
+      const params: any = {
+        pageNumber: page,
+      };
+      if (isValidSearch) {
+        params.vehicleNumber = debouncedSearch;
+      } else if (
+        debouncedSearch.length <= MIN_LENGTH &&
+        debouncedSearch.length !== 0
+      ) {
+        return;
+      }
       const response = await axiosInstance.get("finance/bill/list", {
-        params: {
-          pageNumber: page,
-          vehicleNumber:
-            debouncedSearch.length >= MIN_LENGTH ? debouncedSearch : undefined,
-        },
+        params,
       });
 
       const list = response?.data?.entity?.financeBillListRecordList || [];
@@ -129,9 +135,8 @@ const BillingList = () => {
   }, [debouncedSearch]);
 
   useEffect(() => {
-    if (!isValidSearch) return;
     fetchBillings();
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, selectedRow]);
 
   /* =======================
      Helpers
@@ -259,17 +264,21 @@ const BillingList = () => {
                               setSelectedRow(item);
                               setOpenBillPopup(true);
                             }}
-                            text="Generate Bill"
+                            text={item?.bId ? "View Bill" : "Generate Bill"}
                             className="!bg-white !text-blue-600 border border-blue-200 !py-1.5 !px-3 hover:!bg-blue-600 hover:!text-white transition-all shadow-sm !text-[11px] !font-bold"
                           />
                           <button
-                            onClick={() => handlePayment(item)}
-                            disabled={!item?.bId}
+                            onClick={() => {
+                              handlePayment(item);
+                            }}
+                            disabled={
+                              !item?.bId || item?.aptStatus === "DELIVERED"
+                            }
                             className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-colors shadow-lg shadow-slate-200
     ${
-      item?.bId
-        ? "bg-slate-900 text-white hover:bg-blue-600"
-        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+      !item?.bId || item?.aptStatus === "DELIVERED"
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : "bg-slate-900 text-white hover:bg-blue-600"
     }`}
                           >
                             PAY

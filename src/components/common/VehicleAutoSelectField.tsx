@@ -4,6 +4,7 @@ export interface AutoSelectOption {
   id?: string | number;
   label: string;
   value: any;
+  disabled?: boolean;
 }
 
 export interface VehicleAutoSelectProps {
@@ -76,8 +77,7 @@ const VehicleAutoSelectField = ({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleClear = (e: React.MouseEvent) => {
@@ -167,18 +167,22 @@ const VehicleAutoSelectField = ({
               <li
                 key={opt.value}
                 onClick={() => {
+                  if (opt.disabled) return; // ✅ prevent selection
+
                   onChange(opt);
                   setSearchTerm(opt.label);
                   setOpen(false);
                 }}
                 className={`
-                  cursor-pointer px-4 py-2.5 text-sm transition-colors
-                  ${
-                    value?.value === opt.value
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }
-                `}
+    px-4 py-2.5 text-sm transition-colors
+    ${
+      opt.disabled
+        ? "text-gray-400 cursor-not-allowed bg-gray-50" // ✅ disabled style
+        : value?.value === opt.value
+          ? "bg-blue-50 font-semibold text-blue-700 cursor-pointer"
+          : "text-gray-700 hover:bg-gray-50 cursor-pointer"
+    }
+  `}
               >
                 {opt.label}
               </li>

@@ -37,7 +37,7 @@ const STATUS_OPTIONS = [
   { label: "In Progress", value: "IN_PROGRESS" },
   { label: "Quality Check", value: "QUALITY_CHECK" },
   { label: "Ready for Delivery", value: "READY_FOR_DELIVERY" },
-  { label: "Delivered", value: "DELIVERED" },
+  { label: "Delivered", value: "DELIVERED", disabled: true },
 ];
 
 const UpdateJobCard = () => {
@@ -260,7 +260,11 @@ const UpdateJobCard = () => {
                 text={loading ? "Updating..." : "Update Job Card"}
                 type="submit"
                 align="center"
-                disabled={loading || userType === "customer"}
+                disabled={
+                  loading ||
+                  userType === "customer" ||
+                  formik?.values?.jcStatus?.value === "DELIVERED"
+                }
               />
             </div>
           </form>

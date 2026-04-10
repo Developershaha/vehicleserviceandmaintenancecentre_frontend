@@ -60,25 +60,7 @@ const Navbar = () => {
           </h2>
         </Link>
         {/* Divider */}
-        <div className="h-8 w-px bg-slate-300 hidden sm:block" />
-
-        {/* User Info Container */}
-        <div className="hidden sm:flex items-center gap-3 rounded-lg bg-white/70 px-3 py-1.5 border border-slate-200 shadow-sm">
-          {/* Avatar */}
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white text-sm font-bold uppercase">
-            {username?.charAt(0) ?? "U"}
-          </div>
-
-          {/* Text */}
-          <div className="flex flex-col text-left">
-            <span className="text-sm font-semibold text-slate-700 leading-tight">
-              {username}
-            </span>
-            <span className="text-[10px] font-medium text-slate-400 capitalize">
-              {userType} account
-            </span>
-          </div>
-        </div>
+        {/* <div className="h-8 w-px bg-slate-300 hidden sm:block" /> */}
       </div>
 
       {/* RIGHT: Nav Links + Logout */}
@@ -117,7 +99,22 @@ const Navbar = () => {
             ></span>
           </Link>
         </div>
+        <div className="hidden sm:flex items-center gap-3 rounded-lg bg-white/70 px-3 py-1.5 border border-slate-200 shadow-sm">
+          {/* Avatar */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white text-sm font-bold uppercase">
+            {username?.charAt(0) ?? "U"}
+          </div>
 
+          {/* Text */}
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-semibold text-slate-700 leading-tight">
+              {username}
+            </span>
+            <span className="text-[10px] font-medium text-slate-400 capitalize">
+              {userType} account
+            </span>
+          </div>
+        </div>
         {/* Logout Button */}
         <button
           onClick={handleLogout}
